@@ -15,6 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('deduction_id')->constrained()->onDelete('cascade');
             $table->foreignId('employee_id')->constrained()->onDelete('cascade');
+            $table->decimal('amount', 10, 2);
+            $table->date('start_date');
+            $table->date('end_date')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

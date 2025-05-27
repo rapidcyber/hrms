@@ -13,6 +13,9 @@ use WithPagination;
 
     public $employeeId, $date, $checkIn, $checkOut, $status;
     public $isOpen = false;
+    public $sortField = 'check_in';
+    public $sortDirection = 'desc';
+    public $confirmDelete = false;
     public $search = '';
 
     public function render()
@@ -23,7 +26,7 @@ use WithPagination;
                       ->orWhere('last_name', 'like', '%'.$this->search.'%')
                       ->orWhere('employee_id', 'like', '%'.$this->search.'%');
             })
-            ->orderBy('check_in', 'desc')
+            ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(10);
 
         return view('livewire.attendance-tracking', ['attendances' => $attendances]);
@@ -49,5 +52,13 @@ use WithPagination;
         session()->flash('message', 'Biometric data synced successfully.');
     }
 
+    public function create(){
+
+    }
+
+    public function sort($field) {
+        $this->sortField = $field;
+        $this->sortDirection = $this->sortDirection == 'desc' ? 'asc' : 'desc';
+    }
     // Other CRUD methods similar to EmployeeManagement...
 }

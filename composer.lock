@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5ffa160d080fac550d7368070dc24aa4",
+    "content-hash": "4d33c24eb08ffebcf036ac6ceda94c9d",
     "packages": [
         {
             "name": "brick/math",
@@ -5771,82 +5771,6 @@
             "time": "2025-04-09T08:14:01+00:00"
         },
         {
-            "name": "tallstackui/tallstackui",
-            "version": "v2.7.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/tallstackui/tallstackui.git",
-                "reference": "9230dbc0a599af595fdfe59cb39aa07c447e269f"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/tallstackui/tallstackui/zipball/9230dbc0a599af595fdfe59cb39aa07c447e269f",
-                "reference": "9230dbc0a599af595fdfe59cb39aa07c447e269f",
-                "shasum": ""
-            },
-            "require": {
-                "ext-zip": "*",
-                "illuminate/console": "^10.0|^11.0|^12.0",
-                "illuminate/contracts": "^10.0|^11.0|^12.0",
-                "illuminate/pagination": "^10.0|^11.0|^12.0",
-                "illuminate/support": "^10.0|^11.0|^12.0",
-                "illuminate/view": "^10.0|^11.0|^12.0",
-                "livewire/livewire": "^3.5.0",
-                "php": "^8.1"
-            },
-            "require-dev": {
-                "blade-ui-kit/blade-icons": "^1.7",
-                "larastan/larastan": "^2.7",
-                "laravel/pint": "^1.13",
-                "orchestra/testbench": "^8.0|^9.0|^10.0",
-                "orchestra/testbench-dusk": "^8.0|^9.0",
-                "pestphp/pest": "^2.0|^3.7",
-                "pestphp/pest-plugin-type-coverage": "^2.2|^3.3",
-                "spatie/ray": "^1.41"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "TallStackUi": "TallStackUi\\Facades\\TallStackUi"
-                    },
-                    "providers": [
-                        "TallStackUi\\TallStackUiServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "files": [
-                    "src/helpers.php"
-                ],
-                "psr-4": {
-                    "TallStackUi\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "AJ Meireles",
-                    "email": "alvaro.meireles@live.com"
-                }
-            ],
-            "description": "TallStackUI is a powerful suite of Blade components that elevate your workflow of Livewire applications.",
-            "support": {
-                "issues": "https://github.com/tallstackui/tallstackui/issues",
-                "source": "https://github.com/tallstackui/tallstackui/tree/v2.7.1"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/devajmeireles",
-                    "type": "github"
-                }
-            ],
-            "time": "2025-05-20T17:30:17+00:00"
-        },
-        {
             "name": "tijsverkoyen/css-to-inline-styles",
             "version": "v2.3.0",
             "source": {
@@ -8554,23 +8478,23 @@
         },
         {
             "name": "sebastian/environment",
-            "version": "7.2.0",
+            "version": "7.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/environment.git",
-                "reference": "855f3ae0ab316bbafe1ba4e16e9f3c078d24a0c5"
+                "reference": "a5c75038693ad2e8d4b6c15ba2403532647830c4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/855f3ae0ab316bbafe1ba4e16e9f3c078d24a0c5",
-                "reference": "855f3ae0ab316bbafe1ba4e16e9f3c078d24a0c5",
+                "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/a5c75038693ad2e8d4b6c15ba2403532647830c4",
+                "reference": "a5c75038693ad2e8d4b6c15ba2403532647830c4",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.2"
             },
             "require-dev": {
-                "phpunit/phpunit": "^11.0"
+                "phpunit/phpunit": "^11.3"
             },
             "suggest": {
                 "ext-posix": "*"
@@ -8606,15 +8530,27 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/environment/issues",
                 "security": "https://github.com/sebastianbergmann/environment/security/policy",
-                "source": "https://github.com/sebastianbergmann/environment/tree/7.2.0"
+                "source": "https://github.com/sebastianbergmann/environment/tree/7.2.1"
             },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
                     "type": "github"
+                },
+                {
+                    "url": "https://liberapay.com/sebastianbergmann",
+                    "type": "liberapay"
+                },
+                {
+                    "url": "https://thanks.dev/u/gh/sebastianbergmann",
+                    "type": "thanks_dev"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/sebastian/environment",
+                    "type": "tidelift"
                 }
             ],
-            "time": "2024-07-03T04:54:44+00:00"
+            "time": "2025-05-21T11:55:47+00:00"
         },
         {
             "name": "sebastian/exporter",

@@ -27,6 +27,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/payroll', function(){
         return view('payroll.index');
     })->name('payroll');
+    Route::get('/departments', function(){
+        return view('departments.index');
+    })->name('departments');
+    Route::get('/positions', function(){
+        return view('positions.index');
+    })->name('positions');
 });
 
 

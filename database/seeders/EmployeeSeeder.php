@@ -80,6 +80,7 @@ class EmployeeSeeder extends Seeder
                 'base_salary' => $baseSalary,
                 'department_id' => $departments->random()->id,
                 'position_id' => $position->id,
+                'shift_id' => rand(1, 3), // Assuming you have 3 shifts
                 // 'biometric_id' => $biometricId,
             ]);
         }

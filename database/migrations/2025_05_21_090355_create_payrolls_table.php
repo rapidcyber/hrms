@@ -19,7 +19,10 @@ return new class extends Migration
             $table->decimal('gross_salary', 10, 2);
             $table->decimal('total_deductions', 10, 2);
             $table->decimal('net_salary', 10, 2);
+            $table->decimal('bonus', 10, 2)->nullable(); // Optional bonus
+            $table->decimal('overtime_pay', 10, 2)->nullable(); // Optional overtime pay
             $table->string('status')->default('pending'); // pending, approved, paid
+            $table->date('payment_date')->nullable(); // Date when the payroll was paid
             $table->timestamps();
         });
     }

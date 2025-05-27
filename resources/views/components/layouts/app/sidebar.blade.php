@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
     <head>
+
         @include('partials.head')
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
@@ -15,7 +16,10 @@
                 <flux:navlist.group :heading="__('Platform')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                     <flux:navlist.item icon="users" :href="route('employees')" :current="request()->routeIs('employees')" wire:navigate>{{ __('Employess') }}</flux:navlist.item>
-                    <flux:navlist.item icon="hand-coins" :href="route('payroll')" :current="request()->routeIs('payroll')" wire:navigate>{{ __('payroll') }}</flux:navlist.item>
+                    <flux:navlist.item icon="hand-coins" :href="route('payroll')" :current="request()->routeIs('payroll')" wire:navigate>{{ __('Payroll') }}</flux:navlist.item>
+                    <flux:navlist.item icon="calendar-clock" :href="route('attendance')" :current="request()->routeIs('attendance')" wire:navigate>{{ __('Attendance') }}</flux:navlist.item>
+                    <flux:navlist.item icon="building-2" :href="route('departments')" :current="request()->routeIs('departments')" wire:navigate>{{ __('Departments') }}</flux:navlist.item>
+                    <flux:navlist.item icon="award" :href="route('positions')" :current="request()->routeIs('positions')" wire:navigate>{{ __('Positions') }}</flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>
 

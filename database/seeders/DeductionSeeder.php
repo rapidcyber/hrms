@@ -17,80 +17,107 @@ class DeductionSeeder extends Seeder
             [
                 'name' => 'PAYE Tax',
                 'type' => 'tax',
-                'amount' => 0,
+                'default_amount' => 0,
                 'calculation_type' => 'percentage',
-                'is_active' => true,
-                'description' => 'Pay As You Earn income tax'
+                'description' => 'Pay As You Earn income tax',
+                'created_by' => 1,
+                'updated_by' => 1,
+                'effective_from' => now(),
+                'effective_until' => null,
             ],
             [
                 'name' => 'Social Security',
                 'type' => 'tax',
-                'amount' => 5.5,
+                'default_amount' => 5.5,
                 'calculation_type' => 'percentage',
-                'is_active' => true,
-                'description' => 'Social security contributions'
+                'description' => 'Social security contributions',
+                'created_by' => 1,
+                'updated_by' => 1,
+                'effective_from' => now(),
+                'effective_until' => null,
             ],
 
-            // Statutory Deductions
+            // Benefits Deductions
             [
                 'name' => 'Pension Contribution',
-                'type' => 'statutory',
-                'amount' => 5,
+                'type' => 'benefits',
+                'default_amount' => 5,
                 'calculation_type' => 'percentage',
-                'is_active' => true,
-                'description' => 'Employee pension contribution'
+                'description' => 'Employee pension contribution',
+                'created_by' => 1,
+                'updated_by' => 1,
+                'effective_from' => now(),
+                'effective_until' => null,
             ],
             [
                 'name' => 'Health Insurance',
-                'type' => 'statutory',
-                'amount' => 200,
+                'type' => 'benefits',
+                'default_amount' => 200,
                 'calculation_type' => 'fixed',
-                'is_active' => true,
-                'description' => 'Monthly health insurance premium'
+                'description' => 'Monthly health insurance premium',
+                'created_by' => 1,
+                'updated_by' => 1,
+                'effective_from' => now(),
+                'effective_until' => null,
             ],
             [
                 'name' => 'Union Dues',
-                'type' => 'statutory',
-                'amount' => 50,
+                'type' => 'benefits',
+                'default_amount' => 50,
                 'calculation_type' => 'fixed',
-                'is_active' => true,
-                'description' => 'Monthly union membership fees'
+                'description' => 'Monthly union membership fees',
+                'created_by' => 1,
+                'updated_by' => 1,
+                'effective_from' => now(),
+                'effective_until' => null,
             ],
 
             // Voluntary Deductions
             [
                 'name' => 'Staff Loan Repayment',
                 'type' => 'voluntary',
-                'amount' => 0,
+                'default_amount' => 0,
                 'calculation_type' => 'fixed',
-                'is_active' => true,
-                'description' => 'Employee loan repayment'
+                'description' => 'Employee loan repayment',
+                'created_by' => 1,
+                'updated_by' => 1,
+                'effective_from' => now(),
+                'effective_until' => null,
             ],
             [
                 'name' => 'Charity Donation',
                 'type' => 'voluntary',
-                'amount' => 20,
+                'default_amount' => 20,
                 'calculation_type' => 'fixed',
-                'is_active' => true,
-                'description' => 'Monthly charity contribution'
+                'description' => 'Monthly charity contribution',
+                'created_by' => 1,
+                'updated_by' => 1,
+                'effective_from' => now(),
+                'effective_until' => null,
             ],
 
             // Custom Deductions
             [
                 'name' => 'Uniform Fee',
                 'type' => 'custom',
-                'amount' => 100,
+                'default_amount' => 100,
                 'calculation_type' => 'fixed',
-                'is_active' => true,
-                'description' => 'Company uniform maintenance'
+                'description' => 'Company uniform maintenance',
+                'created_by' => 1,
+                'updated_by' => 1,
+                'effective_from' => now(),
+                'effective_until' => null,
             ],
             [
                 'name' => 'Training Fee',
                 'type' => 'custom',
-                'amount' => 0,
+                'default_amount' => 0,
                 'calculation_type' => 'fixed',
-                'is_active' => true,
-                'description' => 'Specialized training costs'
+                'description' => 'Specialized training costs',
+                'created_by' => 1,
+                'updated_by' => 1,
+                'effective_from' => now(),
+                'effective_until' => null,
             ]
         ];
 
