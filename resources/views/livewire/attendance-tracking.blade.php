@@ -16,6 +16,28 @@
             </div>
         @endif
 
+        {{-- Filters --}}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div>
+                <label for="period_start" class="block text-sm font-medium text-gray-700">Period Start</label>
+                <input wire:model="periodStart" type="date" id="period_start"
+                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                @error('periodStart') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+            </div>
+            <div>
+                <label for="period_end" class="block text-sm font-medium text-gray-700">Period End</label>
+                <input wire:model="periodEnd" type="date" id="period_end"
+                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                @error('periodEnd') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+            </div>
+            <div class="flex items-end">
+                <button wire:click="$refresh"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Load Attendance
+                </button>
+            </div>
+        </div>
+
         <div
             x-data="{ sortField: @entangle('sortField'), sortDirection: @entangle('sortDirection') }"
             class="bg-white shadow-md rounded-lg overflow-x-auto">
@@ -82,90 +104,43 @@
         </div>
     </div>
     <!-- Modal -->
-    {{-- <x-modal wire:show="isOpen" maxWidth="2xl" title="{{ $employeeId ? 'Edit Attendance' : 'Add Attendance' }}">
+    <x-modal wire:show="isOpen" maxWidth="2xl" title="{{ $employeeId ? 'Edit Attendance' : 'Add Attendance' }}">
         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <form>
-                <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                    <div class="sm:col-span-3">
-                        <input wire:model="firstName" id="first_name" type="text" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        @error('firstName')
-                            <span class="text-xs text-red-500">{{$message}}</span>
-                        @enderror
-                    </div>
-                    <div class="sm:col-span-3">
-                        <label for="last_name" class="block text-sm font-medium text-gray-700">Last Name</label>
-                        <input wire:model="lastName" id="last_name" type="text" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        @error('lastName')
-                            <span class="text-xs text-red-500">{{$message}}</span>
-                        @enderror
-                    </div>
-                    <div class="sm:col-span-3">
-                        <label for="employee_id" class="block text-sm font-medium text-gray-700">Employee ID</label>
-                        <input wire:model="employee_id" id="employee_id" type="text" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        @error('employee_id')
-                            <span class="text-xs text-red-500">{{$message}}</span>
-                        @enderror
-                    </div>
-                    <div class="sm:col-span-3">
-                        <label for="base_salary" class="block text-sm font-medium text-gray-700">Base Salary</label>
-                        <input wire:model="baseSalary" id="base_salary" type="number" step="0.01" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                    <div class="sm:col-span-3">
-                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                        <input wire:model="email" id="email" type="email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        @error('email')
-                            <span class="text-xs text-red-500">{{$message}}</span>
-                        @enderror
-                    </div>
-                    <div class="sm:col-span-3">
-                        <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
-                        <input wire:model="phone" id="phone" type="text" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        @error('phone')
-                            <span class="text-xs text-red-500">{{$message}}</span>
-                        @enderror
-                    </div>
-                    <div class="sm:col-span-3">
-                        <label for="date_of_birth" class="block text-sm font-medium text-gray-700">Date of Birth</label>
-                        <input wire:model="dateOfBirth" id="date_of_birth" type="date" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        @error('dateOfBirth')
-                            <span class="text-xs text-red-500">{{$message}}</span>
-                        @enderror
-                    </div>
-                    <div class="sm:col-span-3">
-                        <label for="hire_date" class="block text-sm font-medium text-gray-700">Hire Date</label>
-                        <input wire:model="hireDate" type="date" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                    <div class="sm:col-span-3">
-                        <label for="position" class="block text-sm font-medium text-gray-700">Position</label>
-                        <select wire:model="position" id="position" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Select Position</option>
-                            @foreach ($positions as $item)
-                                <option value="{{$item->id}}">{{$item->name}}</option>
-                            @endforeach
-                        </select>
-
-                    </div>
-                    <div class="sm:col-span-3">
-                        <label for="department" class="block text-sm font-medium text-gray-700">Hire Date</label>
-                        <select wire:model="department" id="department" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Select Department</option>
-                            @foreach ($departments as $item)
-                                <option value="{{$item->id}}">{{$item->name}}</option>
-                            @endforeach
-                        </select>
-                    </div>
+            <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                <div class="sm:col-span-6">
+                    <label for="employee_id" class="block text-sm font-medium text-gray-700">Select Employee</label>
+                    <select wire:model="employeeId" id="employee_id"
+                        class="mt-1 block w-full border-r-10 outline outline-gray-300 border-transparent rounded-md shadow-sm py-2 px-3 focus:outline-blue-500 focus:ring-blue-500">
+                        <option value="">-- Select Employee --</option>
+                        @foreach($employees as $employee)
+                            <option value="{{ $employee->id }}">{{ $employee->first_name }} {{ $employee->last_name }}</option>
+                        @endforeach
+                    </select>
+                    @error('employeeId') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                 </div>
-            </form>
+                <div class="sm:col-span-3">
+                    <label for="check_in" class="block text-sm font-medium text-gray-700">Check-in</label>
+                    <input wire:model="checkIn" type="datetime-local" id="check_in"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    @error('checkIn') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                </div>
+                <div class="sm:col-span-3">
+                    <label for="check_out" class="block text-sm font-medium text-gray-700">Check-out</label>
+                    <input wire:model="checkOut" type="datetime-local" id="check_out"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    @error('checkOut') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                </div>
+            </div>
         </div>
         <x-slot name="footer">
             <button wire:click.prevent="store" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                {{ $isEdit ? 'Update' : 'Add New' }}
+                {{ $attendanceId ? 'Update' : 'Add New' }}
             </button>
             <button wire:click="closeModal" class="ml-4 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
                 Cancel
             </button>
         </x-slot>
-    </x-modal> --}}
+    </x-modal>
     {{-- Confirm Delete --}}
     <div wire:show="confirmDelete" class="fixed z-30 inset-0 overflow-y-auto">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">

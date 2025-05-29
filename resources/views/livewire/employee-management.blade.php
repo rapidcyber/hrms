@@ -160,7 +160,7 @@
                             class="mt-1 block w-full border-r-10 outline outline-gray-300 border-transparent rounded-md shadow-sm py-2 px-3 focus:outline-blue-500 focus:ring-blue-500">
                             <option value="">Select Shift</option>
                             @foreach ($shifts as $item)
-                                <option value="{{$item->id}}">{{$item->name}} ({{$item->time_in}} - {{$item->time_out}})</option>
+                                <option value="{{$item->id}}">{{$item->name}} ({{ \Carbon\Carbon::parse($item->time_in)->format('h:i A')}} - {{\Carbon\Carbon::parse($item->time_out)->format('h:i A')}})</option>
                             @endforeach
                         </select>
                     </div>
