@@ -16,17 +16,20 @@ class ShiftSeeder extends Seeder
             [
                 'name' => 'Morning Shift',
                 'time_in' => '08:00:00',
-                'time_out' => '16:00:00',
+                'time_out' => '17:00:00',
+                'rest_days' => json_encode([0, 6]), // Assuming 0 = Sunday, 6 = Saturday
             ],
             [
                 'name' => 'Evening Shift',
-                'time_in' => '16:00:00',
-                'time_out' => '00:00:00',
+                'time_in' => '17:00:00',
+                'time_out' => '01:00:00',
+                'rest_days' => json_encode([0, 6]),
             ],
             [
                 'name' => 'Night Shift',
-                'time_in' => '00:00:00',
-                'time_out' => '08:00:00',
+                'time_in' => '01:00:00',
+                'time_out' => '09:00:00',
+                'rest_days' => json_encode([1, 0]),
             ],
         ];
         foreach ($data as $shift) {

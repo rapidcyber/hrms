@@ -3,7 +3,7 @@
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold">Employee Management</h1>
             <div>
-                <input wire:model.live="search" type="text" placeholder="Search employees..." class="px-4 py-2 border rounded-md">
+                <input wire:model.live="search" type="search" placeholder="Search employees..." class="px-4 bg-white py-2 border rounded-md">
                 <button wire:click="create" class="ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                     Add Employee
                 </button>
@@ -22,36 +22,36 @@
             <table class="min-w-full leading-normal">
                 <thead>
                     <tr>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             <button wire:click="sort('employee_id')" class="flex items-center text-gray-500 hover:text-gray-900">
                                 Employee ID
                                 <flux:icon.chevron-up-down />
                             </button>
                         </th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             <button wire:click="sort('first_name')" class="flex items-center text-gray-500 hover:text-gray-900">
                                 Name
                                 <flux:icon.chevron-up-down />
                             </button>
                         </th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             <button wire:click="sort('email')" class="flex items-center text-gray-500 hover:text-gray-900">
                                 Email
                                 <flux:icon.chevron-up-down />
                             </button>
                         </th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             <button wire:click="sort('phone')" class="flex items-center text-gray-500 hover:text-gray-900">
                                 Phone
                                 <flux:icon.chevron-up-down />
                             </button>
                         </th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             <button wire:click="sort('base_salary')" class="flex items-center text-gray-500 hover:text-gray-900">
                                 <flux:icon.chevron-up-down />
                             </button>
                         </th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -82,8 +82,9 @@
     <!-- Modal -->
     <x-modal wire:show="isOpen" maxWidth="2xl" title="{{ $employeeId ? 'Edit Employee' : 'Add Employee' }}">
         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <form>
-                <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+            <form x-data="{next:@entangle('next').live}">
+                @csrf
+                <div x-show="!next" class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                     <div class="sm:col-span-3">
                         <label for="first_name" class="block text-sm font-medium text-gray-700">First Name</label>
                         <input wire:model="firstName" id="first_name" type="text" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
@@ -106,7 +107,7 @@
                         @enderror
                     </div>
                     <div class="sm:col-span-3">
-                        <label for="base_salary" class="block text-sm font-medium text-gray-700">Base Salary</label>
+                        <label for="base_salary" class="block text-sm font-medium text-gray-700">Basic Salary</label>
                         <input wire:model="baseSalary" id="base_salary" type="number" step="0.01" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div class="sm:col-span-3">
@@ -133,26 +134,33 @@
                     <div class="sm:col-span-3">
                         <label for="hire_date" class="block text-sm font-medium text-gray-700">Hire Date</label>
                         <input wire:model="hireDate" type="date" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        @error('hireDate')
+                            <span class="text-xs text-red-500">{{$message}}</span>
+                        @enderror
                     </div>
                     <div class="sm:col-span-3">
                         <label for="department" class="block text-sm font-medium text-gray-700">Department</label>
                         <select wire:model="department" id="department"
-                            class="mt-1 block w-full border-r-10 outline outline-gray-300 border-transparent rounded-md shadow-sm py-2 px-3 focus:outline-blue-500 focus:ring-blue-500">
+                            class="mt-2 block w-full border-r-10 outline outline-gray-300 border-transparent rounded-md shadow-sm py-2 px-3 focus:outline-blue-500 focus:ring-blue-500">
                             <option value="">Select Department</option>
                             @foreach ($departments as $item)
                                 <option value="{{$item->id}}">{{$item->name}}</option>
                             @endforeach
                         </select>
+                        @error('department')
+                            <span class="text-xs text-red-500">{{$message}}</span>
+                        @enderror
                     </div>
                     <div class="sm:col-span-3">
-                        <label for="position" class="block text-sm font-medium text-gray-700">Position</label>
-                        <select wire:model="position" id="position"
-                            class="mt-1 block w-full border-r-10 outline outline-gray-300 border-transparent rounded-md shadow-sm py-2 px-3 focus:outline-blue-500 focus:ring-blue-500">
-                            <option value="">Select Position</option>
+                        <x-flux::select
+                            wire:model="position"
+                            label="Position"
+                            placeholder="Select Position"
+                            >
                             @foreach ($positions as $item)
-                                <option value="{{$item->id}}">{{$item->name}}</option>
+                            <x-flux::select.option value="{{$item->id}}">{{$item->name}}</x-flux::select.option>
                             @endforeach
-                        </select>
+                        </x-flux::select>
                     </div>
                     <div class="sm:col-span-3">
                         <label for="shift" class="block text-sm font-medium text-gray-700">Shift</label>
@@ -163,14 +171,75 @@
                                 <option value="{{$item->id}}">{{$item->name}} ({{ \Carbon\Carbon::parse($item->time_in)->format('h:i A')}} - {{\Carbon\Carbon::parse($item->time_out)->format('h:i A')}})</option>
                             @endforeach
                         </select>
+                        @error('shift')
+                            <span class="text-xs text-red-500">{{$message}}</span>
+                        @enderror
                     </div>
+                    <div class="sm:col-span-3">
+                        <div class="block text-sm font-medium text-gray-700">Rest Days</div>
+                        <div x-data="{ open: false, selected: @js($rest_days), position: 'bottom' }" class="relative w-64">
+                            <button
+                                type="button"
+                                @click.stop="open = !open; position = window.innerHeight - $el.getBoundingClientRect().bottom < 200 ? 'top' : 'bottom'"
+                                class="mt-1 pl-4 flex justify-between items-center w-full border-r-10 outline outline-gray-300 border-transparent rounded-md shadow-sm h-[38px] focus:outline-blue-500 focus:ring-blue-500">
+                                <span class="truncate">{{empty($rest_days) ? 'Select Rest-days' : implode(', ', array_filter($rest_days))}}</span>
+                                <x-flux::icon name="chevron-down" class="h-3 w-3" />
+                            </button>
+
+                            <div x-show="open" @click.away="open = false"
+                                class="absolute w-full bg-white border rounded shadow-lg"
+                                :class="position === 'top' ? 'bottom-full mb-2' : 'mt-2'">
+                                <template x-for="(option, index) in {{json_encode($weekMap)}}" :key="index">
+                                    <div @click="
+                                        selected.hasOwnProperty(index) ? delete selected[index] : selected[index]=option;
+                                        $wire.set('rest_days', selected)"
+                                        class="px-4 py-2 cursor-pointer hover:bg-gray-200"
+                                        :class="selected.hasOwnProperty(index) ? 'bg-blue-100' : ''">
+                                        <span x-text="option"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div x-show="next" class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                    <div class="sm:col-span-6">
+                        <x-flux::textarea
+                            wire:model="address"
+                            label="Address"
+                            placeholder="house no#, Street, City, Province, Postal-code">
+                        </x-flux::textarea>
+                    </div>
+                    {{-- <div class="sm:col-span-6 flex flex-col items-center justify-center">
+                        <div class="h-56 w-56 bg-gray-300 rounded">
+                            @if($photo)
+                                <img src="{{ $photo->temporaryUrl() }}"
+                                    class="object-cover w-full h-full"
+                                    alt="Employee profile photo, person facing forward in a neutral office environment">
+                            @endif
+                        </div>
+                        <label for="photo">Photo 2x2</label>
+                        <input id="photo" type="file" wire:model="photo"
+                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" accept="image/*"/>
+                        @error('photo')
+                            <span class="text-xs text-red-500">{{$message}}</span>
+                        @enderror
+                    </div> --}}
                 </div>
             </form>
         </div>
         <x-slot name="footer">
-            <button wire:click.prevent="store" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                {{ $isEdit ? 'Update' : 'Add New' }}
-            </button>
+            @if(!$next)
+                <button
+                    wire:click.prevent="validateStep1"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    {{ __('Next') }}
+                </button>
+            @else
+                <button wire:click.prevent="store" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    {{ $employeeId ? 'Update' : 'Add New' }}
+                </button>
+            @endif
             <button wire:click="closeModal" class="ml-4 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
                 Cancel
             </button>

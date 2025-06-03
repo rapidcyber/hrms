@@ -7,24 +7,8 @@ use App\Models\Deduction;
 
 class Deductions extends Component
 {
-        //    $table->string('name');
-        //     $table->string('code')->unique()->nullable();
-        //     $table->enum('type', ['tax', 'benefits', 'voluntary', 'loan', 'other','custom'])->default('other');
-        //     $table->enum('calculation_type', ['fixed', 'percentage'])->default('fixed');
-        //     $table->decimal('default_amount', 10, 2);
-        //     $table->decimal('min_amount', 10, 2)->nullable();
-        //     $table->decimal('max_amount', 10, 2)->nullable();
-        //     $table->boolean('tax_deductible')->default(false);
-        //     $table->boolean('applies_to_all')->default(false);
-        //     $table->date('effective_from')->nullable();
-        //     $table->date('effective_until')->nullable();
-        //     $table->text('description')->nullable();
-        //     $table->json('metadata')->nullable();
-        //     $table->foreignId('created_by')->constrained('users')->nullable();
-        //     $table->foreignId('updated_by')->constrained('users')->nullable();
 
-
-    public $isOpen = false, $deductionId, $confirDelete=false, $name, $code, $type,$calculation_type, $description;
+    public $isOpen = false, $deductionId, $confirmDelete=false, $name, $code, $type,$calculation_type, $description, $apply_all;
     public $types = ['tax', 'benefits', 'voluntary', 'loan', 'other','custom'];
 
     public function render()
@@ -40,19 +24,66 @@ class Deductions extends Component
 
     public function edit($id){
         $this->deductionId = $id;
-        $this->code = $this->code;
+        $this->isOpen = true;
         $deduction = Deduction::find($id);
 
         $this->name = $deduction->name;
-        $this->description = $deduction->dedscription;
+        $this->code = $deduction->code;
+        $this->type = $deduction->type;
+        $this->apply_all = $deduction->applies_to_all;
+        $this->description = $deduction->description;
+
+    }
+
+    public function delete(){
+        $deduction = Deduction::find($this->confirmDelete);
+        if($deduction->employees()->count() > 0){
+            session()->flash('error', 'This deduction cannot be deleted as it is associated with employees.');
+            return;
+        }
+        $deduction->delete();
+        session()->flash('message', 'Deduction deleted successfully.');
+        $this->confirmDelete = false;
+    }
+
+    public function store(){
+        $this->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:3',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        $data = [
+            'name' => $this->name,
+            'code' => $this->code,
+            'type' => $this->type,
+            'default_amount' => 0, // Assuming default amount is set to 0 initially
+            'description' => $this->description,
+            'applies_to_all' => $this->apply_all
+        ];
+
+        if($this->deductionId){
+            $data['updated_by'] = auth()->user()->id;
+            $data['updated_at'] = now();
+        } else {
+            $data['created_by'] = auth()->user()->id;
+            $data['updated_by'] = auth()->user()->id;
+            $data['created_at'] = now();
+            $data['updated_at'] = now();
+        }
+
+        Deduction::updateOrCreate(['id' => $this->deductionId], $data);
+
+        session()->flash('message', $this->deductionId ? 'Deduction updated successfully.' : 'Deduction created successfully.');
+        $this->isOpen = false;
     }
 
     private function resetFields(){
+        $this->deductionId = null;
         $this->name = '';
         $this->code = '';
-        $this->type = 'tax';
-        $this->calculation_type = 'fixed';
-        $this->default_amount = null;
+        $this->type = 'other';
+        $this->apply_all = false;
         $this->description = '';
     }
 }

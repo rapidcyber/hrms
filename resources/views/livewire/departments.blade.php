@@ -35,16 +35,16 @@
             @endforeach
         </div>
 
-        <x-modal wire:show="isOpen" title="Create Department" maxWidth="2xl">
+        <x-modal wire:show="isOpen" title="{{$departmentId ? 'Add New' : 'Edit'}} Department" maxWidth="2xl">
             <form wire:submit.prevent="store">
                 <div class="space-y-4">
                     <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                        <label for="type" class="block text-sm font-medium text-gray-700">Name</label>
                         <input
                             type="text"
                             id="name"
                             wire:model.defer="name"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             required
                         >
                         @error('name')
@@ -56,7 +56,7 @@
                         <textarea
                             id="description"
                             wire:model.defer="description"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             rows="3"
                         ></textarea>
                         @error('description')
@@ -67,19 +67,32 @@
                 <x-slot name="footer">
                     <button
                         type="button"
-                        wire:click="$set('showCreateModal', false)"
+                        wire:click="$set('isOpen', false)"
                         class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
-                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                        class="ml-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
                     >
-                        Create
+                        {{$departmentId ? 'Update' : 'Add New'}}
                     </button>
                 </x-slot>
             </form>
+        </x-modal>
+        <x-modal wire:show="confirmDelete" title="{{ __('Delete Department') }}" maxWith="md">
+            <div class="mb-4">
+                <p>{{ __('Are you sure you want to delete this department? This action cannot be undone.') }}</p>
+            </div>
+            <div class="flex justify-end gap-2">
+                <x-flux::button type="button" wire:click="$set('confirmDelete', false)">
+                    {{ __('Cancel') }}
+                </x-flux::button>
+                <x-flux::button type="button" variant="danger" wire:click="delete({{ $confirmDelete }})">
+                    {{ __('Delete') }}
+                </x-flux::button>
+            </div>
         </x-modal>
     </div>
 </div>

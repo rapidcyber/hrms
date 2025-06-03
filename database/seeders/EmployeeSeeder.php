@@ -69,7 +69,7 @@ class EmployeeSeeder extends Seeder
             // Generate biometric ID (simulating ZKTeco device format)
             $biometricId = str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
 
-            Employee::create([
+            $employee = Employee::create([
                 'employee_id' => 'EMP' . str_pad($i, 4, '0', STR_PAD_LEFT),
                 'first_name' => $faker->firstName,
                 'last_name' => $faker->lastName,
@@ -83,10 +83,11 @@ class EmployeeSeeder extends Seeder
                 'shift_id' => rand(1, 3), // Assuming you have 3 shifts
                 // 'biometric_id' => $biometricId,
             ]);
+            log_activity('add_employee', 'Added Employee', $employee, ['position' => $position->name]);
         }
 
         // Create some admin/test users
-        $this->createTestEmployees();
+        // $this->createTestEmployees();
     }
 
     /**

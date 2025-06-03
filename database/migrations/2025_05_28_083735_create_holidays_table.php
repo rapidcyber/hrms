@@ -17,6 +17,9 @@ return new class extends Migration
             $table->date('date');
             $table->enum('type', ['regular', 'special-non-working', 'special-working', 'company'])->default('regular');
             $table->boolean('is_recurring')->default(false);
+            $table->text('description')->nullable();
+            $table->foreignId('created_by')->constrained('users')->nullable();
+            $table->foreignId('updated_by')->constrained('users')->nullable();
             $table->timestamps();
         });
     }

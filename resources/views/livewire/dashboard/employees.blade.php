@@ -6,7 +6,7 @@
         </div>
         <div class="flex flex-col flex-col text-gray-600 dark:text-gray-300">
             <strong class="text-lg text-purple-400">{{ $activeEmployees }}</strong>
-            <strong>Active Employees</strong>
+            <strong>Total</strong>
         </div>
     </div>
 </div>

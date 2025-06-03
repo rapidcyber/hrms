@@ -24,7 +24,10 @@ return new class extends Migration
             $table->unsignedBigInteger('department_id')->nullable(); // Make nullable first
             $table->unsignedBigInteger('position_id')->nullable(); // Make nullable first
             $table->foreignId('shift_id')->nullable()->constrained()->onDelete('set null'); // Nullable for employees without shifts
+            $table->json('rest_days')->nullable(); // Store array of weekdays e.g. [0=>"Sunday", 6=>"Saturday"]
             $table->string('biometric_id')->nullable()->unique(); // For ZKTeco integration
+            $table->string('photo')->nullable(); // Store path or filename of employee photo
+            $table->text('address')->nullable();
             $table->timestamps();
             $table->softDeletes(); // For employee offboarding
         });

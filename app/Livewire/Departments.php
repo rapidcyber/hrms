@@ -34,6 +34,7 @@ class Departments extends Component
         $this->departmentId = '';
         $this->name = '';
         $this->description = '';
+        $this->holidayId = '';
     }
     public function store()
     {

@@ -6,6 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Payroll extends Model
 {
+    // public $fillable = [
+    //     'employee_id',
+    //     'cutoff_id',
+    //     'base_salary',
+    //     'overtime',
+    //     'bonus',
+    //     'total_deductions',
+    //     'net_salary',
+    //     'created_by',
+    //     'updated_by',
+    // ];
+
     public function employee()
     {
         return $this->belongsTo(Employee::class);

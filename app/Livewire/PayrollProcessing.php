@@ -153,13 +153,28 @@ class PayrollProcessing extends Component
     public function render()
     {
 
+        $weekMap = [
+            0 => 'Sunday',
+            1 => 'Monday',
+            2 => 'Tuesday',
+            3 => 'Wednesday',
+            4 => 'Thursday',
+            5 => 'Friday',
+            6 => 'Saturday',
+        ];
+
+        // dd($weekMap[now()->dayOfWeek()]);
+
         if($this->employees->isEmpty()) {
             $this->loadEmployees();
         }
         if(empty($this->recentPayrolls)) {
             $this->recentPayrolls = Payroll::orderBy('created_at', 'desc')->take(5)->get();
         }
+        $payrolls = Payroll::where('status', 'processed')
+            ->whereBetween('period_start', [$this->periodStart, $this->periodEnd])
+            ->get();
 
-        return view('livewire.payroll-processing');
+        return view('livewire.payroll-processing', compact('payrolls','weekMap'));
     }
 }

@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             ShiftSeeder::class,
             EmployeeSeeder::class,
             AttendanceSeeder::class,
+            HolidaySeeder::class,
         ]);
 
             // Now assign department managers

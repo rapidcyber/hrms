@@ -6,6 +6,24 @@ use Illuminate\Database\Eloquent\Model;
 
 class Employee extends Model
 {
+    protected $fillable = [
+        'id',
+        'employee_id',
+        'first_name',
+        'last_name',
+        'email',
+        'department_id',
+        'position_id',
+        'shift_id',
+        'date_of_birth',
+        'hire_date',
+        'rest_days',
+        'base_salary',
+        'photo',
+        'phone',
+        'address'
+        // add other fields as needed
+    ];
     public function payrolls()
     {
         return $this->hasMany(Payroll::class);
@@ -63,5 +81,9 @@ class Employee extends Model
     public function scopeWithPayroll($query)
     {
         return $query->with('payrolls');
+    }
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class);
     }
 }

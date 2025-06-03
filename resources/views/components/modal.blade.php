@@ -31,12 +31,15 @@
             class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full {{ $maxWidthClass }} p-6 relative"
         >
             <!-- Close button -->
-            <button
+            {{-- <button
                 @click="show = false"
-                class="absolute top-2 right-4 text-2xl text-gray-500 hover:text-gray-700 dark:text-gray-300"
+                class="absolute top-2 right-2 rounded px-3 hover:bg-gray-100 text-2xl text-gray-500 hover:text-gray-700 dark:text-gray-300"
             >
                 &times;
-            </button>
+            </button> --}}
+            <div class="absolute top-3 right-3">
+                <x-flux::button @click="show = false" size="sm" icon="x-mark" variant="ghost" inset />
+            </div>
 
             <!-- Title -->
             @if($title)

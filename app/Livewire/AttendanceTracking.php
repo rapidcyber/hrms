@@ -13,8 +13,12 @@ class AttendanceTracking extends Component
 
     public $attendanceId, $date, $checkIn, $checkOut, $status,$periodStart,$periodEnd, $employeeId;
     public $isOpen = false;
-    public $sortField = 'check_in';
-    public $sortDirection = 'desc';
+    public $sortField = 'date';
+    public $sortDirection = [
+        'date' => 'desc',
+        'employee_id' => 'asc',
+        'first_name' => 'asc',
+    ];
     public $confirmDelete = false;
     public $search = '';
 
@@ -32,10 +36,10 @@ class AttendanceTracking extends Component
                       ->orWhere('last_name', 'like', '%'. $this->search.'%')
                       ->orWhere('employee_id', 'like', '%' .$this->search.'%');
             })
-            ->where('check_in', '>=', $this->periodStart)
-            ->where('check_out', '<=', $this->periodEnd)
-            ->orderBy($this->sortField, $this->sortDirection)
+            ->whereBetween('date', [$this->periodStart, $this->periodEnd])
+            ->orderBy($this->sortField, $this->sortDirection[$this->sortField])
             ->paginate(10);
+
         $employees = Employee::all();
 
         return view('livewire.attendance-tracking', ['attendances' => $attendances, 'employees'=> $employees]);
@@ -51,8 +55,8 @@ class AttendanceTracking extends Component
         foreach($employees as $employee) {
             Attendance::create([
                 'employee_id' => $employee->id,
-                'check_in' => now()->subHours(9),
-                'check_out' => now(),
+                'in_1' => now()->subHours(9),
+                'out_1' => now(),
                 'status' => 'present',
                 'source' => 'biometric'
             ]);
@@ -81,7 +85,7 @@ class AttendanceTracking extends Component
 
     public function sort($field) {
         $this->sortField = $field;
-        $this->sortDirection = $this->sortDirection == 'desc' ? 'asc' : 'desc';
+        $this->sortDirection = $this->sortDirection[$field] == 'desc' ? 'asc' : 'desc';
     }
     // Other CRUD methods similar to EmployeeManagement...
     public function resetFields()

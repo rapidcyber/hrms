@@ -33,6 +33,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/positions', function(){
         return view('positions.index');
     })->name('positions');
+    Route::get('/deductions', function(){
+        return view('deductions.index');
+    })->name('deductions');
+    Route::get('/holidays', function(){
+        return view('holidays.index');
+    })->name('holidays');
+    Route::get('/leaves', function(){
+        return view('leaves.index');
+    })->name('leaves');
 });
 
 
