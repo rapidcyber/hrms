@@ -43,12 +43,22 @@ class Departments extends Component
             'description' => 'nullable|string|max:500',
         ]);
 
-        Department::updateOrCreate(
-            ['id' => $this->departmentId],
-            ['name' => $this->name, 'description' => $this->description]
-        );
+        $department = $this->departmentId ? Department::find($this->departmentId) : new Department;
 
-        session()->flash('message', $this->departmentId ? 'Department updated successfully.' : 'Department created successfully.');
+        $department->name = $this->name;
+        $department->description = $this->description;
+
+
+
+        if($department->save()){
+            $log = [
+                'action' => $this->departmentId ? 'update_department' : 'added_department',
+                'description' => $this->departmentId ? 'Department updated' : 'Department created'
+            ];
+            log_activity($log['action'], $log['description'], $department, ['department'=>$department->name]);
+            session()->flash('message', $this->departmentId ? 'Department updated successfully.' : 'Department created successfully.');
+        }
+
         $this->closeModal();
     }
     public function edit($id)
@@ -62,8 +72,26 @@ class Departments extends Component
     public function delete($id)
     {
         $department = Department::findOrFail($id);
-        $department->delete();
-        session()->flash('message', 'Department deleted successfully.');
+
+        $msg = [
+            'action' => 'error',
+            'message' => 'Department has employees.'
+        ];
+
+        if($department->employees->isEmpty()){
+            $msg = [
+                'action' => 'message',
+                'message' => 'Department deleted successfully.'
+            ];
+            $log = [
+                'action' => 'delete_department',
+                'description' => 'Department deleted'
+            ];
+            $department->delete();
+            log_activity($log['action'], $log['description'], $department, ['department'=>$department->name]);
+        }
+        session()->flash($msg['action'], $msg['message']);
+        $this->cancelDelete();
     }
     public function confirmDelete($id)
     {

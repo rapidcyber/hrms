@@ -45,19 +45,30 @@ class Positions extends Component
 
         }
     }
-    public function delete($positionId)
+    public function delete()
     {
-        $position = Position::find($positionId);
+        $position = Position::find($this->confirmDelete);
 
-        if($position->employees->isNotEmpty()){
-            session()->flash('message', 'Delete failed because the position has employees.');
-            return;
-        }
+        $msg = [
+            'action' => 'error',
+            'message' => 'Delete failed because the position has employees.'
+        ];
 
-        if ($position) {
-            $position->delete();
-            session()->flash('message', 'Position deleted successfully.');
+        if($position->employees->isEmpty()){
+            $msg = [
+                'action' => 'message',
+                'message' => 'Position deleted successfully.'
+            ];
+            $log = [
+                'action' => 'delete_Position',
+                'description' => 'Position deleted'
+            ];
+            if($position->delete()){
+                log_activity($log['action'], $log['description'], $position, ['Position'=>$position->name]);
+            }
         }
+        session()->flash($msg['action'], $msg['message']);
+        $this->confirmDelete = 0;
     }
     public function savePosition()
     {

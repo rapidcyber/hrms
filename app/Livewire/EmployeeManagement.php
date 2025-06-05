@@ -40,9 +40,12 @@ class EmployeeManagement extends Component
 
     public function render()
     {
-        $employees = Employee::where('first_name', 'like', '%'.$this->search.'%')
+        $employees = Employee::join('departments', 'employees.department_id', '=', 'departments.id')
+            ->join('positions', 'employees.department_id', '=', 'positions.id')
+            ->where('first_name', 'like', '%'.$this->search.'%')
             ->orWhere('last_name', 'like', '%'.$this->search.'%')
             ->orWhere('employee_id', 'like', '%'.$this->search.'%')
+            ->select('employees.*')
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(10);
         $positions = Position::all();

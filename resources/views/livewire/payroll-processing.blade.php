@@ -2,26 +2,48 @@
 <div class="min-h-screen">
     <div class="container mx-auto px-4 py-8">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">Payroll Processing</h1>
-            <p class="text-sm text-gray-500">Process payroll for the selected employees.</p>
+            <div>
+                <h1 class="text-2xl font-bold">Payroll Processing</h1>
+                <p class="text-sm text-gray-500">Process payroll for the selected employees.</p>
+            </div>
+            <div>
+                <flux:input wire:model.live="search" icon="magnifying-glass" placeholder="Search employees..." />
+                {{-- <input wire:model.live="search" type="search" placeholder="Search employees..." class="px-4 py-2 bg-white border rounded-md"> --}}
+                {{-- <button wire:click="create" @click="$refresh()" class="ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    Add Attendance
+                </button> --}}
+            </div>
         </div>
 
         <!-- Payroll Period Selection -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div>
-                <label for="period_start" class="block text-sm font-medium text-gray-700">Period Start</label>
+                <x-flux::input
+                    type="date"
+                    wire:model="periodStart"
+                    label="Cut-off Start">
+
+                </x-flux::input>
+
+                {{-- <label for="period_start" class="block text-sm font-medium text-gray-700">Period Start</label>
                 <input wire:model="periodStart" type="date" id="period_start"
                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                @error('periodStart') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                @error('periodStart') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror --}}
             </div>
             <div>
-                <label for="period_end" class="block text-sm font-medium text-gray-700">Period End</label>
+                <x-flux::input
+                    type="date"
+                    wire:model="periodEnd"
+                    label="Cut-off End">
+
+                </x-flux::input>
+                {{-- <label for="period_end" class="block text-sm font-medium text-gray-700">Period End</label>
                 <input wire:model="periodEnd" type="date" id="period_end"
                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                @error('periodEnd') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                @error('periodEnd') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror --}}
             </div>
             <div class="flex items-end">
-                <button wire:click="loadEmployees"
+                <button wire:click="$refresh"
                         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                     Load Employees
                 </button>
@@ -44,6 +66,22 @@
                     :class="tab === 'employees' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'"
                     class="rounded-full border shadow-md px-4 py-2">Employees
                 </button>
+                @if( count($selectedEmployees) && $periodStart && $periodEnd)
+                <!-- Process Payroll Button -->
+
+                    <button wire:click="processPayroll"
+                            wire:loading.attr="disabled"
+                            class="px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        <span wire:loading.remove>Process Payroll</span>
+                        <span wire:loading>
+                            Processing...
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </span>
+                    </button>
+                @endif
                 <button
                     id="payrolls-tab"
                     type="button"
@@ -54,6 +92,7 @@
                     :class="tab === 'payrolls' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'"
                     class="rounded-full border shadow-md px-4 py-2">Payrolls
                 </button>
+
             </div>
 
             <div x-show="tab === 'employees'" class="bg-white shadow-md rounded-lg overflow-x-auto" role="tabpanel" aria-labelledby="employees-tab">
@@ -76,7 +115,7 @@
                         @foreach($employees as $employee)
                         <tr wire:key="employee-{{ $employee->id }}">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <input type="checkbox" wire:model="selectedEmployees" value="{{ $employee->id }}">
+                                <input type="checkbox" wire:model.live="selectedEmployees" value="{{ $employee->id }}">
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
@@ -138,7 +177,8 @@
                     </tbody>
                 </table>
                 @endif
-                @if( count($selectedEmployees) && $periodStart && $periodEnd)
+            </div>
+            @if( count($selectedEmployees) && $periodStart && $periodEnd)
                 <!-- Process Payroll Button -->
                 <div class="flex justify-end mt-4">
                     <button wire:click="processPayroll"
@@ -159,7 +199,6 @@
                     Select a date range and load employees to begin payroll processing
                 </div>
                 @endif
-            </div>
             <div x-show="tab === 'payroll'"
                 class="bg-white shadow-md rounded-lg overflow-x-auto"
                 role="tabpanel" aria-labelledby="tab1">
@@ -178,7 +217,7 @@
                         @foreach($payrolls as $payroll)
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $payroll->employee->name }}
+                                {{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ $payroll->period_start->format('M d, Y') }} - {{ $payroll->period_end->format('M d, Y') }}

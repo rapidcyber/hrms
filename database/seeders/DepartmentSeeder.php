@@ -16,12 +16,12 @@ class DepartmentSeeder extends Seeder
             [
                 'name' => 'Human Resources',
                 'code' => 'HR',
-                'description' => 'Handles recruitment, employee relations, and company policies'
+                'description' => 'Handles recruitment, employee relations, and company policies, finances, payroll, and accounting'
             ],
             [
-                'name' => 'Finance',
-                'code' => 'FIN',
-                'description' => 'Manages company finances, payroll, and accounting'
+                'name' => 'Utilities',
+                'code' => 'UD',
+                'description' => 'Manages company sanitation, food and maintenance'
             ],
             [
                 'name' => 'Information Technology',
@@ -31,27 +31,12 @@ class DepartmentSeeder extends Seeder
             [
                 'name' => 'Marketing',
                 'code' => 'MKT',
-                'description' => 'Handles brand management and promotional activities'
+                'description' => 'Handles brand management and promotional activities, Brand guidlines and multi-media'
             ],
             [
                 'name' => 'Operations',
                 'code' => 'OPS',
                 'description' => 'Manages daily business operations and logistics'
-            ],
-            [
-                'name' => 'Sales',
-                'code' => 'SALES',
-                'description' => 'Responsible for revenue generation and client acquisition'
-            ],
-            [
-                'name' => 'Customer Support',
-                'code' => 'CS',
-                'description' => 'Provides assistance to customers and resolves issues'
-            ],
-            [
-                'name' => 'Research & Development',
-                'code' => 'RND',
-                'description' => 'Focuses on product innovation and improvement'
             ]
         ];
 

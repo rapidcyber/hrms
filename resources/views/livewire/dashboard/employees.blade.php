@@ -1,4 +1,4 @@
-<div class="relative size-full p-5">
+<div class="relative size-full p-5" @click="location.href='/employees'">
     <h2 class="text-lg font-semibold text-gray-800 dark:text-white">Employees</h2>
     <div class="flex mt-4 items-center bg-white rounded-lg p-4 gap-4 shadow-md dark:bg-gray-800 dark:shadow-gray-700">
         <div class="w-fit p-2 rounded-full bg-gray-100">

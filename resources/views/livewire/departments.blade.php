@@ -14,6 +14,15 @@
         </div>
     @endif
 
+    @if (session()->has('error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <svg class="shrink-0 size-5 inline" data-flux-icon="" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
+              <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"></path>
+            </svg>
+            Delete failed: {{ session('error') }}
+        </div>
+    @endif
+
     <div class="relative size-full p-5">
         <h2 class="text-lg font-semibold text-gray-800 dark:text-white">Departments</h2>
     </div>
@@ -73,7 +82,7 @@
                         Cancel
                     </button>
                     <button
-                        type="submit"
+                        wire:click="store"
                         class="ml-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
                     >
                         {{$departmentId ? 'Update' : 'Add New'}}

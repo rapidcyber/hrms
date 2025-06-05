@@ -11,13 +11,12 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
             $table->date('date');
-
-            $table->time('in_1')->nullable();   // First clock-in
-            $table->time('out_1')->nullable();  // First clock-out (e.g., break)
-            $table->time('in_2')->nullable();   // After-break in
-            $table->time('out_2')->nullable();  // After-break out
-            $table->time('in_3')->nullable();   // Optional
-            $table->time('out_3')->nullable();  // Final clock-out
+            $table->dateTime('in_1')->nullable();   // First clock-in
+            $table->dateTime('out_1')->nullable();  // First clock-out (e.g., break)
+            $table->dateTime('in_2')->nullable();   // After-break in
+            $table->dateTime('out_2')->nullable();  // After-break out
+            $table->dateTime('in_3')->nullable();   // Optional
+            $table->dateTime('out_3')->nullable();  // Final clock-out
 
             $table->decimal('hours_worked', 5, 2)->default(0); // Total hours
             $table->string('status')->nullable(); // e.g., present, absent, late
@@ -26,7 +25,7 @@ return new class extends Migration {
 
             $table->timestamps();
 
-            $table->unique(['employee_id', 'date']); // One record per day per employee
+            // $table->unique(['employee_id', 'date']); // One record per day per employee
         });
     }
 

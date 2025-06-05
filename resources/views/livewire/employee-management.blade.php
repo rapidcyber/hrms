@@ -35,19 +35,20 @@
                             </button>
                         </th>
                         <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            <button wire:click="sort('email')" class="flex items-center text-gray-500 hover:text-gray-900">
-                                Email
+                            <button wire:click="sort('departments.name')" class="flex items-center text-gray-500 hover:text-gray-900">
+                                Department
                                 <flux:icon.chevron-up-down />
                             </button>
                         </th>
                         <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            <button wire:click="sort('phone')" class="flex items-center text-gray-500 hover:text-gray-900">
-                                Phone
+                            <button wire:click="sort('positions.name')" class="flex items-center text-gray-500 hover:text-gray-900">
+                                Position
                                 <flux:icon.chevron-up-down />
                             </button>
                         </th>
                         <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             <button wire:click="sort('base_salary')" class="flex items-center text-gray-500 hover:text-gray-900">
+                                Basic Salary
                                 <flux:icon.chevron-up-down />
                             </button>
                         </th>
@@ -59,8 +60,8 @@
                     <tr>
                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $employee->employee_id }}</td>
                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $employee->first_name }} {{ $employee->last_name }}</td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $employee->email }}</td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $employee->phone }}</td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $employee->department->name }}</td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ $employee->position->name }}</td>
                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ number_format($employee->base_salary, 2) }}</td>
                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                             <button wire:click="edit({{ $employee->id }})" class="text-blue-600 hover:text-blue-900">

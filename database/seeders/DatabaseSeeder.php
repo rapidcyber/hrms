@@ -27,8 +27,8 @@ class DatabaseSeeder extends Seeder
             PositionSeeder::class,
             DeductionSeeder::class,
             ShiftSeeder::class,
-            EmployeeSeeder::class,
-            AttendanceSeeder::class,
+            // EmployeeSeeder::class,
+            // AttendanceSeeder::class,
             HolidaySeeder::class,
         ]);
 

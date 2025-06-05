@@ -11,6 +11,8 @@ class ActivityLogs extends Component
     {
         $activityLogs = ActivityLog::latest()->take(10)->get();
 
-        return view('livewire.activity-logs', compact('activityLogs'));
+        $syncLogs = ActivityLog::where('action', 'sync')->latest()->first();
+
+        return view('livewire.activity-logs', compact('activityLogs', 'syncLogs'));
     }
 }

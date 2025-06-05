@@ -15,7 +15,7 @@
             <flux:navlist variant="outline">
                 <flux:navlist.group :heading="__('HR Managment System')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                    <flux:navlist.item icon="users" :href="route('employees')" :current="request()->routeIs('employees')" wire:navigate>{{ __('Employess') }}</flux:navlist.item>
+                    <flux:navlist.item icon="users" :href="route('employees')" :current="request()->routeIs('employees')" wire:navigate>{{ __('Employees') }}</flux:navlist.item>
                     <flux:navlist.item icon="calendar-clock" :href="route('attendance')" :current="request()->routeIs('attendance')" wire:navigate>{{ __('Attendance') }}</flux:navlist.item>
                     <flux:navlist.item icon="hand-coins" :href="route('payroll')" :current="request()->routeIs('payroll')" wire:navigate>{{ __('Payroll') }}</flux:navlist.item>
                     <flux:navlist.item icon="building-2" :href="route('departments')" :current="request()->routeIs('departments')" wire:navigate>{{ __('Departments') }}</flux:navlist.item>

@@ -18,33 +18,21 @@ class EmployeeSeeder extends Seeder
     public function run()
     {
         // Create departments if they don't exist
-        $departments = [
-            ['name' => 'Human Resources'],
-            ['name' => 'Finance'],
-            ['name' => 'Information Technology'],
-            ['name' => 'Marketing'],
-            ['name' => 'Operations'],
-            ['name' => 'Sales'],
-            ['name' => 'Customer Support'],
-        ];
+        // $departments = [
+        //     ['name' => 'Human Resources'],
+        //     ['name' => 'Utilities'],
+        //     ['name' => 'Information Technology'],
+        //     ['name' => 'Operations'],
+        // ];
 
-        foreach ($departments as $department) {
-            Department::firstOrCreate($department);
-        }
+        // foreach ($departments as $department) {
+        //     Department::firstOrCreate($department);
+        // }
 
         // Create positions if they don't exist
-        $positions = [
-            ['name' => 'Manager', 'level' => 5],
-            ['name' => 'Senior Developer', 'level' => 4],
-            ['name' => 'Developer', 'level' => 3],
-            ['name' => 'Junior Developer', 'level' => 2],
-            ['name' => 'HR Specialist', 'level' => 3],
-            ['name' => 'Accountant', 'level' => 3],
-            ['name' => 'Marketing Specialist', 'level' => 3],
-            ['name' => 'Sales Representative', 'level' => 2],
-            ['name' => 'Customer Support Agent', 'level' => 1],
-            ['name' => 'Operations Coordinator', 'level' => 2],
-        ];
+        $positions = Position::all()->map(function($position){
+            return ['name' => $position->name, 'level' => 1];
+        });
 
         foreach ($positions as $position) {
             Position::firstOrCreate($position);

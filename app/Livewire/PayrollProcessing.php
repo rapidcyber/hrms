@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Attendance;
 use Livewire\Component;
 use App\Models\Employee;
 use App\Models\Payroll;
@@ -11,7 +12,8 @@ class PayrollProcessing extends Component
 {
     public $periodStart;
     public $periodEnd;
-    public $employees;
+    // public $employees;
+    public $search = '';
     public $selectedEmployees = [];
     public $selectAll = false;
     public $showingDeductions = null;
@@ -27,51 +29,76 @@ class PayrollProcessing extends Component
         'description' => '',
         'is_active' => true
     ];
-
+    public $summary = [];
 
     public function mount()
     {
-        $this->employees = collect();
+        // $this->employees = collect();
         $this->periodStart = Carbon::now()->startOfMonth()->format('Y-m-d');
         $this->periodEnd = Carbon::now()->endOfMonth()->format('Y-m-d');
     }
 
-    public function loadEmployees()
-    {
-        $this->validate([
-            'periodStart' => 'required|date',
-            'periodEnd' => 'required|date|after:periodStart'
-        ]);
 
-        $this->employees = Employee::with(['deductions' => function($query) {
-                $query->where('is_active', true);
-            }])
-            ->get()
-            ->each(function($employee) {
-                $employee->total_deductions = $employee->deductions->sum(function($deduction) use($employee) {
-                    return $deduction->calculation_type === 'percentage'
-                        ? $employee->base_salary * ($deduction->default_amount / 100)
-                        : $deduction->default_amount;
-                });
-            });
-    }
 
     public function processPayroll()
     {
-        $payroll = Payroll::create([
-            'period_start' => $this->periodStart,
-            'period_end' => $this->periodEnd,
-            'status' => 'processed'
-        ]);
+
+        $cutoffStart = Carbon::parse($this->periodStart)->format('Y-m-d H:i:s');
+        $cutoffEnd = Carbon::parse($this->periodEnd)->format('Y-m-d H:i:s');
 
         foreach ($this->selectedEmployees as $employeeId) {
-            $employee = Employee::find($employeeId);
 
-            $payroll->employees()->attach($employeeId, [
-                'gross_salary' => $employee->base_salary,
-                'total_deductions' => $employee->total_deductions,
-                'net_salary' => $employee->base_salary - $employee->total_deductions
-            ]);
+            $hours_worked =  Attendance::where('employee_id', $employeeId)
+                ->whereBetween('date',[$cutoffStart, $cutoffEnd])
+                ->sum('hours_worked');
+
+            $attendances = Attendance::where('employee_id', $employeeId)
+                ->whereBetween('date',[$this->periodStart, $this->periodEnd])
+                ->get();
+
+            $hours_late = 0;
+            foreach ($attendances as $attendance) {
+                $scheduled_in = $attendance->date . ' ' .$attendance->employee->shift->time_in;
+                // Assuming 'scheduled_in' and 'in_1' are datetime fields in Attendance
+                if (!empty($scheduled_in) && !empty($attendance->in_1)) {
+                    $scheduledIn = Carbon::parse($scheduled_in);
+                    $actualIn = Carbon::parse($attendance->in_1);
+                    if ($actualIn->gt($scheduledIn)) {
+                        $hours_late += $scheduledIn->diffInMinutes($actualIn) / 60;
+                    }
+                }
+            }
+
+            if(!empty($hours_worked)){
+                $payroll = new Payroll;
+                $employee = Employee::find($employeeId);
+
+                $payroll->employee_id = $employeeId;
+                $payroll->period_start = $this->periodStart;
+                $payroll->period_end = $this->periodEnd;
+                $payroll->gross_salary = $employee->base_salary;
+
+                // Calculate total deductions
+                $total_deductions = $employee->deductions()
+                    ->where('is_active', true)
+                    ->get()
+                    ->sum(function($deduction) use ($employee) {
+                        return $deduction->calculation_type === 'percentage'
+                            ? $employee->base_salary * ($deduction->default_amount / 100)
+                            : $deduction->default_amount;
+                    });
+
+                $payroll->total_deductions = $total_deductions;
+                $payroll->net_salary = $employee->base_salary - $total_deductions;
+                $payroll->status = 'processed';
+                $payroll->save();
+            }
+
+            // $payroll->employees()->attach($employeeId, [
+            //     'gross_salary' => $employee->base_salary,
+            //     'total_deductions' => $employee->total_deductions,
+            //     'net_salary' => $employee->base_salary - $employee->total_deductions
+            // ]);
         }
 
         session()->flash('message', 'Payroll processed successfully!');
@@ -163,11 +190,27 @@ class PayrollProcessing extends Component
             6 => 'Saturday',
         ];
 
+        $cutoffStart = Carbon::parse($this->periodStart)->format('Y-m-d');
+        $cutoffEnd = Carbon::parse($this->periodEnd)->format('Y-m-d');
+
+        $employees = Employee::whereHas('attendances', function($query) use($cutoffEnd,$cutoffStart) {
+            // $query->whereNotNull('in_1');
+                $query->whereBetween('attendances.date', [$cutoffStart, $cutoffEnd]);
+            })->where(function($q){
+                $q->where('first_name', 'like', '%'. $this->search.'%')
+                ->orWhere('last_name', 'like', '%'. $this->search.'%')
+                ->orWhere('employee_id', 'like', '%' .$this->search.'%');
+            })
+            // ->where('first_name', 'like', '%'. $this->search.'%')
+            //       ->orWhere('last_name', 'like', '%'. $this->search.'%')
+            //       ->orWhere('employee_id', 'like', '%' .$this->search.'%')
+            ->get();
+
         // dd($weekMap[now()->dayOfWeek()]);
 
-        if($this->employees->isEmpty()) {
-            $this->loadEmployees();
-        }
+        // if($this->employees->isEmpty()) {
+        //     $this->loadEmployees();
+        // }
         if(empty($this->recentPayrolls)) {
             $this->recentPayrolls = Payroll::orderBy('created_at', 'desc')->take(5)->get();
         }
@@ -175,6 +218,6 @@ class PayrollProcessing extends Component
             ->whereBetween('period_start', [$this->periodStart, $this->periodEnd])
             ->get();
 
-        return view('livewire.payroll-processing', compact('payrolls','weekMap'));
+        return view('livewire.payroll-processing', compact('employees','payrolls','weekMap'));
     }
 }

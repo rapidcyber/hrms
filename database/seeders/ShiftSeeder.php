@@ -20,17 +20,18 @@ class ShiftSeeder extends Seeder
                 'rest_days' => json_encode([0, 6]), // Assuming 0 = Sunday, 6 = Saturday
             ],
             [
-                'name' => 'Evening Shift',
-                'time_in' => '17:00:00',
-                'time_out' => '01:00:00',
-                'rest_days' => json_encode([0, 6]),
+                'name' => 'Day Shift',
+                'time_in' => '06:00:00',
+                'time_out' => '18:00:00',
+                'rest_days' => json_encode([0, 6]), // Assuming 0 = Sunday, 6 = Saturday
             ],
             [
                 'name' => 'Night Shift',
-                'time_in' => '01:00:00',
-                'time_out' => '09:00:00',
-                'rest_days' => json_encode([1, 0]),
+                'time_in' => '18:00:00',
+                'time_out' => '06:00:00',
+                'rest_days' => json_encode([0, 6]),
             ],
+
         ];
         foreach ($data as $shift) {
             \DB::table('shifts')->insert([
