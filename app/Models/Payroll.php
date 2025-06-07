@@ -22,10 +22,6 @@ class Payroll extends Model
     {
         return $this->belongsTo(Employee::class);
     }
-    public function deductions()
-    {
-        return $this->hasMany(PayrollDeduction::class);
-    }
     public function getGrossSalary()
     {
         return $this->base_salary + $this->overtime + $this->bonus;
@@ -33,9 +29,5 @@ class Payroll extends Model
     public function getNetSalary()
     {
         return $this->getGrossSalary() - $this->total_deductions;
-    }
-    public function getTotalDeductions()
-    {
-        return $this->deductions->sum('amount');
     }
 }

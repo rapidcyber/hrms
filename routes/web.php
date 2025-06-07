@@ -42,6 +42,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/leaves', function(){
         return view('leaves.index');
     })->name('leaves');
+    Route::get('/user-management', function(){
+        return view('user-management');
+    })->name('user-management');
 });
 
 

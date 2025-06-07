@@ -35,9 +35,11 @@ class AttendanceImport implements ToCollection
             $checkOut = $out_3 ?? $out_2 ?? $out_1 ?? null;
 
             $shiftId = 1;
+            $shiftHrs = 12;
 
             if($checkIn && Carbon::parse($checkIn)->lt(Carbon::parse($date .' 6:30:00')) ) {
                 $shiftId = 2;
+                $shiftHrs = 10;
             }
 
             if($checkIn && Carbon::parse($checkIn)->gt(Carbon::parse('16:30:00')) ) {
@@ -56,6 +58,30 @@ class AttendanceImport implements ToCollection
 
             if(is_null($checkIn)){
                 $status = 'absent';
+            }
+            $restDays = [
+                0=> 'Sunday',
+                1 => null,
+                2 => null,
+                3 => null,
+                4 => null,
+                5 => null,
+                6 => 'Saturday'
+            ];
+            if(in_array(Carbon::parse($date)->dayOfWeek(), array_keys(array_filter($restDays)))){
+                $status = 'rest-day';
+            }
+
+            if($shiftId === 3){
+                $restDays = [
+                    0 => null,
+                    1 => null,
+                    2 => null,
+                    3 => null,
+                    4 => null,
+                    5 => null,
+                    6 => 'Saturday'
+                ];
             }
 
             if(!empty($row[1])){
@@ -76,6 +102,7 @@ class AttendanceImport implements ToCollection
                     $employee->department_id = 5;
                     $employee->position_id = 6;
                     $employee->shift_id = $shiftId;
+                    $employee->rest_days = json_encode($restDays);
                     $employee->save();
                 }
             }
@@ -88,6 +115,15 @@ class AttendanceImport implements ToCollection
                     $attendance = new Attendance;
                 }
 
+
+
+
+                $hrs = is_numeric($row[9]) ? round($row[9], 2) : 0;
+
+                if($hrs > ($shiftHrs/2)){
+                    $hrs = $hrs - 1;
+                }
+
                 $attendance->employee_id = $employee->id;
                 $attendance->date = $date;
                 $attendance->in_1 = $in_1;
@@ -96,7 +132,7 @@ class AttendanceImport implements ToCollection
                 $attendance->out_2 = $out_2;
                 $attendance->in_3 = $in_3;
                 $attendance->out_3 = $out_3;
-                $attendance->hours_worked = is_numeric($row[9]) ? round($row[9], 2) : 0;
+                $attendance->hours_worked = $hrs;
                 $attendance->status = $status;
                 $attendance->source = 'imported';
 

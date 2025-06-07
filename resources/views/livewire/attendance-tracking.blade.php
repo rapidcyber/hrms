@@ -89,12 +89,12 @@
                 <x-slot:body>
                     @foreach($attendances as $attendance)
                         <x-flux.table.row :even="$loop->even">
-                            @php($checkout = $attendance->in_1 ?? $attendance->in_2 ?? $attendance->in_3)
+                            @php($checkIn = $attendance->in_1 ?? $attendance->in_2 ?? $attendance->in_3)
                             @php($checkout = $attendance->out_3 ?? $attendance->out_2 ?? $attendance->out_1 ?? null)
-
+                            @php($date = \Carbon\Carbon::parse($attendance->date))
                             <x-flux.table.cell>{{ $attendance->employee->first_name }} {{ $attendance->employee->last_name }}</x-flux.table.cell>
-                            <x-flux.table.cell>{{ \Carbon\Carbon::parse($attendance->in_1)->format('F j, Y') }}</x-flux.table.cell>
-                            <x-flux.table.cell>{{ $attendance->in_1 ? \Carbon\Carbon::parse($attendance->in_1)->format('h:i A') : '-' }}</x-flux.table.cell>
+                            <x-flux.table.cell>{{ $date->format('F j, Y') }} {{ $weekMap[ $date->dayOfWeek()]}}</x-flux.table.cell>
+                            <x-flux.table.cell>{{ $checkIn ? \Carbon\Carbon::parse($checkIn)->format('h:i A') : '-' }}</x-flux.table.cell>
                             <x-flux.table.cell>
 
                                 {{ $checkout ? \Carbon\Carbon::parse($checkout)->format('h:i A') : '-' }}
@@ -106,7 +106,7 @@
                                 <x-flux::button wire:click="edit({{ $attendance->id }})" icon="square-pen" secondary>
                                     {{ __('Edit') }}
                                 </x-flux::button>
-                                <x-flux::button wire:click="$set('cofirmDelete', {{ $attendance->id }})" icon="trash" variant="danger">
+                                <x-flux::button wire:click="$set('confirmDelete', {{ $attendance->id }})" icon="trash" variant="danger">
                                     {{ __('Delete') }}
                                 </x-flux::button>
                             </x-flux.table.cell>

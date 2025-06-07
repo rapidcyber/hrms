@@ -27,6 +27,16 @@ class AttendanceTracking extends Component
     public $confirmDelete = false;
     public $search = '';
 
+    public $weekMap = [
+        'Sun',
+        'Mon',
+        'Tue',
+        'Wed',
+        'Thu',
+        'Fri',
+        'Sat',
+    ];
+
     protected $listeners = ['fileSelected'];
 
     public function mount ()
@@ -138,6 +148,18 @@ class AttendanceTracking extends Component
     public function sortBy($sort){
         $this->sortField = $sort;
         $this->sortDirection[$sort] = $this->sortDirection[$sort] == 'asc' ? 'desc' : 'asc';
+    }
+
+    public function delete(){
+        $attendance = Attendance::find($this->confirmDelete);
+
+        if ($attendance) {
+            log_activity('Attendance deleted', 'Attendance record deleted for employee ID ' . $attendance->employee->employee_id, $attendance->id, []);
+            session()->flash('message', 'Attendance deleted successfully.');
+            $attendance->delete();
+            $this->confirmDelete = false;
+        }
+
     }
 
     // Other CRUD methods similar to EmployeeManagement...

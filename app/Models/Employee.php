@@ -34,7 +34,7 @@ class Employee extends Model
     }
     public function deductions()
     {
-        return $this->belongsToMany(Deduction::class);
+        return $this->hasMany(Deduction::class);
     }
     public function department()
     {

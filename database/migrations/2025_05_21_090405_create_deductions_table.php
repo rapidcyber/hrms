@@ -13,17 +13,9 @@ return new class extends Migration
     {
         Schema::create('deductions', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('code')->unique()->nullable();
-            $table->enum('type', ['tax', 'benefits', 'voluntary', 'loan', 'other','custom'])->default('other');
-            $table->enum('calculation_type', ['fixed', 'percentage'])->default('fixed');
-            $table->decimal('default_amount', 10, 2);
-            $table->decimal('min_amount', 10, 2)->nullable();
-            $table->decimal('max_amount', 10, 2)->nullable();
-            $table->boolean('tax_deductible')->default(false);
-            $table->boolean('applies_to_all')->default(false);
-            $table->date('effective_from')->nullable();
-            $table->date('effective_until')->nullable();
+            $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
+            $table->enum('type', ['loan', 'cash-advance'])->default('cash-advance');
+            $table->decimal('amount', 10, 2)->default(0);
             $table->text('description')->nullable();
             $table->json('metadata')->nullable();
             $table->foreignId('created_by')->constrained('users')->nullable();

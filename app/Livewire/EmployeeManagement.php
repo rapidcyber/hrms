@@ -151,7 +151,7 @@ class EmployeeManagement extends Component
         $this->hireDate = $employee->hire_date;
         $this->baseSalary = $employee->base_salary;
         $this->address = $employee->address;
-        if(!empty($employee->rest_days))
+        if($employee->rest_days);
             $this->rest_days = json_decode($employee->rest_days, true);
         $this->oldPhoto = $employee->photo ?? null;
         $this->position = $employee->position_id;

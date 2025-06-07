@@ -7,7 +7,7 @@
                 <p class="text-sm text-gray-500">Process payroll for the selected employees.</p>
             </div>
             <div>
-                <flux:input wire:model.live="search" icon="magnifying-glass" placeholder="Search employees..." />
+                <flux:input wire:model.live="search" icon="magnifying-glass" placeholder="Search employees..." clearable />
                 {{-- <input wire:model.live="search" type="search" placeholder="Search employees..." class="px-4 py-2 bg-white border rounded-md"> --}}
                 {{-- <button wire:click="create" @click="$refresh()" class="ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                     Add Attendance
@@ -49,11 +49,26 @@
                 </button>
             </div>
         </div>
+        <!-- Success Message -->
+        @if (session()->has('message'))
+        <div class="mt-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">
+            <p>{{ session('message') }}</p>
+        </div>
+        @endif
 
+        <!-- Validation Errors -->
+        @if ($errors->any())
+            <div class="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700">
+                <ul class="list-disc pl-5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         <!-- Employee Selection and Summary -->
         <div x-data="{
             tab: 'employees',
-
         }">
             <div class="flex gap-2 pb-2" role="tablist">
                 <button
@@ -107,8 +122,8 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Base Salary</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deductions</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Net Pay</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shift</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -127,17 +142,23 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-500">{{ $employee->department->name }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ number_format($employee->base_salary, 2) }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <button wire:click="showDeductions({{ $employee->id }})"
-                                        class="text-blue-600 hover:text-blue-900 text-sm font-medium">
-                                    View Deductions
-                                </button>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">
+                                {{ $employee->shift->name }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {{ number_format($employee->base_salary - $employee->total_deductions, 2) }}
+                            <td class="px-6 py-4 whitespace-nowrap">
+
+
+                                <flux:button
+                                    size="xs"
+                                    variant="outline"
+                                    icon="eye"
+                                    wire:click="showDeductions({{ $employee->id }})"
+                                >
+                                    Summary
+                                </flux:button>
                             </td>
                         </tr>
 
@@ -145,19 +166,54 @@
                         @if($showingDeductions == $employee->id)
                         <tr class="bg-gray-50">
                             <td colspan="6" class="px-6 py-4">
-                                <h4 class="text-sm font-medium text-gray-900 mb-2">Deductions for {{ $employee->first_name }}</h4>
+                                <h4 class="text-sm font-medium text-gray-900 mb-2">Summary for {{ $employee->first_name }}</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    @foreach($employee->deductions as $deduction)
-                                    <div class="border rounded-md p-3">
+                                    <div class="border bg-gray-200 rounded-md p-3">
                                         <div class="flex justify-between">
-                                            <span class="text-sm font-medium">{{ $deduction->name }}</span>
+                                            <span class="text-sm font-medium">Over Time</span>
                                             <span class="text-sm text-gray-600">
-                                                {{ $deduction->pivot->amount }}
-                                                @if($deduction->calculation_type == 'percentage')% @endif
+                                                {{ number_format($summary['overtime'] ?? 0, 2) }} hours
                                             </span>
                                         </div>
                                         <div class="mt-1 text-xs text-gray-500">
-                                            {{ $deduction->description }}
+
+                                        </div>
+                                    </div>
+                                    <div class="border rounded-md p-3 bg-gray-200">
+                                        <div class="flex justify-between">
+                                            <span class="text-sm font-medium">Lates</span>
+                                            <span class="text-sm text-gray-600">
+                                                {{ number_format($summary['lates'] ?? 0, 2) }} hours
+                                            </span>
+                                        </div>
+                                    </div>
+
+
+                                    @foreach($employee->deductions as $deduction)
+                                    <div class="border bg-white rounded-md p-3 flex gap-2 items-center justify-between">
+                                        <div class="flex justify-between">
+                                            <span class="text-sm font-medium capitalize">{{ $deduction->type }}</span>
+                                            <span class="text-sm text-gray-600">
+                                                {{ $deduction->amount }}
+                                            </span>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <flux:button
+                                                size="xs"
+                                                variant="outline"
+                                                wire:click="editDeduction({{ $deduction->id }})"
+                                                icon="square-pen"
+                                            >
+
+                                            </flux:button>
+                                            <flux:button
+                                                size="xs"
+                                                variant="danger"
+                                                wire:click="deleteDeduction({{ $deduction->id }})"
+                                                class="ml-2"
+                                                icon="trash"
+                                            >
+                                            </flux:button>
                                         </div>
                                     </div>
                                     @endforeach
@@ -177,6 +233,67 @@
                     </tbody>
                 </table>
                 @endif
+            </div>
+            <div x-show="tab==='payrolls'">
+                <div class="flex justify-end pb-2">
+                    <flux:button
+                        size="sm"
+                        variant="outline"
+                        icon="printer"
+                        wire:click="printPayrolls()"
+                    >
+                        Print Payslips
+                    </flux:button>
+                </div>
+                <x-flux.table :data="$payrolls">
+                    <x-slot name="head">
+                        <x-flux.table.heading>Employee</x-flux.table.heading>
+                        <x-flux.table.heading>Period</x-flux.table.heading>
+                        <x-flux.table.heading>Total Amount</x-flux.table.heading>
+                        <x-flux.table.heading>Status</x-flux.table.heading>
+                        <x-flux.table.heading>Actions</x-flux.table.heading>
+                    </x-slot>
+                    <x-slot name="body">
+                        @foreach($payrolls as $payroll)
+                            <x-flux.table.row :even="$loop->even">
+                                <x-flux.table.cell>
+                                    {{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}
+                                </x-flux.table.cell>
+                                <x-flux.table.cell>
+                                    {{ \Carbon\Carbon::parse($payroll->period_start)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($payroll->period_end)->format('M d, Y') }}
+                                </x-flux.table.cell>
+                                <x-flux.table.cell>
+                                    {{ number_format($payroll->net_salary, 2) }}
+                                </x-flux.table.cell>
+                                <x-flux.table.cell>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                        {{ $payroll->status === 'processed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                        {{ ucfirst($payroll->status) }}
+                                    </span>
+                                </x-flux.table.cell>
+                                <x-flux.table.cell>
+                                    <flux:button
+                                        size="xs"
+                                        variant="outline"
+                                        icon="eye"
+                                        class="mr-2"
+                                        wire:click="viewPayroll({{ $payroll->id }})"
+                                    >
+                                        View
+                                    </flux:button>
+                                    <flux:button
+                                        size="xs"
+                                        variant="danger"
+                                        icon="trash"
+                                        wire:click="deletePayroll({{ $payroll->id }})"
+                                    >
+                                        Delete
+                                    </flux:button>
+                                </x-flux.table.cell>
+                            </x-flux.table.row>
+                        @endforeach
+                    </x-slot>
+                </x-flux.table>
             </div>
             @if( count($selectedEmployees) && $periodStart && $periodEnd)
                 <!-- Process Payroll Button -->
@@ -220,10 +337,10 @@
                                 {{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $payroll->period_start->format('M d, Y') }} - {{ $payroll->period_end->format('M d, Y') }}
+                                {{ \Carbon\Carbon::parse($payroll->period_start)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($payroll->period_end)->format('M d, Y') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ number_format($payroll->total_amount, 2) }}
+                                {{ number_format($payroll->net_salary, 2) }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
@@ -232,7 +349,7 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('payroll.show', $payroll->id) }}" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
+                                <a href="#" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
                                 <a href="#" class="text-indigo-600 hover:text-indigo-900">Export</a>
                             </td>
                         </tr>
@@ -242,118 +359,36 @@
                 @endif
             </div>
         </div>
-
-        <!-- Success Message -->
-        @if (session()->has('message'))
-        <div class="mt-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">
-            <p>{{ session('message') }}</p>
-        </div>
-        @endif
-
-        <!-- Recent Payrolls Section -->
-        @if($recentPayrolls->isNotEmpty())
-        <div class="mt-12">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Payrolls</h3>
-            <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employees</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($recentPayrolls as $payroll)
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $payroll->period_start->format('M d, Y') }} - {{ $payroll->period_end->format('M d, Y') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $payroll->employees_count }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ number_format($payroll->total_amount, 2) }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                    {{ $payroll->status === 'processed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                    {{ ucfirst($payroll->status) }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('payroll.show', $payroll->id) }}" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
-                                <a href="#" class="text-indigo-600 hover:text-indigo-900">Export</a>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        @endif
     </div>
     <!-- Deduction Management Modal -->
     <x-modal wire:show="showDeductionModal" maxWidth="lg" title="{{ $editingDeduction ? 'Edit Deduction' : 'Add New Deduction' }}">
 
-        <div class="grid grid-cols-1 gap-4">
+        <div class="grid grid-cols-2 gap-4">
+
             <div>
-                <label for="deductionName">Deduction Name</label>
-                <input id="deductionName" wire:model="deduction.name" id="deductionName" type="text" class="mt-1 block w-full" />
-                @error('deduction.name')
-                    <span class="text-xs text-red-500">{{$message}}</span>
-                @enderror
+                <x-flux::select
+                    label="Type"
+                    wire:model="deduction_type"
+                    placeholder="Select Deduction Type..."
+                    >
+                    <x-flux::select.option value="cash-advance">Cash Advance</x-flux::option>
+                    <x-flux::select.option value="loan">Salary Loan</x-flux::option>
+                </x-flux::select>
             </div>
 
             <div>
-                <label for="deductionType">Type</label>
-                <select wire:model="deduction.type" id="deductionType" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="tax">Tax</option>
-                    <option value="benefits">Benefits</option>
-                    <option value="voluntary">Voluntary</option>
-                    <option value="loan">Loan</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label for="calculationType">Calculation Type</label>
-                    <select wire:model="deduction.calculation_type" id="calculationType" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="fixed">Fixed Amount</option>
-                        <option value="percentage">Percentage</option>
-                    </select>
-                    @error('deduction.calculation_type')
-                        <span class="text-xs text-red-500">{{$message}}</span>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="amount">Amount</label>
-                    <input wire:model="deduction.default_amount" id="amount" type="number" step="0.01" class="mt-1 block w-full" />
-                    @error('deduction.default_amount')
-                        <span class="text-xs text-red-500">{{$message}}</span>
-                    @enderror
-                </div>
+                <x-flux::input
+                    type="number"
+                    label="Amount"
+                    wire:model="deduction_amount"
+                    placeholder="Enter amount"
+                    />
             </div>
 
-            <div>
-                <label for="description">Description</label>
-                <textarea wire:model="deduction.description" id="description" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
-                @error('deduction.description')
-                    <span class="text-xs text-red-500">{{$message}}</span>
-                @enderror
-            </div>
         </div>
         <x-slot name="footer">
-            <button wire:click="$toggle('showDeductionModal')" class="ml-4 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
-                Cancel
-            </button>
-
-            <button class="ml-2" wire:click.prevent="saveDeduction" wire:loading.attr="disabled" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                {{ $editingDeduction ? 'Update' : 'Save' }}
-            </button>
+            <flux:button wire:click="$toggle('showDeductionModal')">Cancel</flux:button>
+            <flux:button class="ml-2" wire:click.prevent="saveDeduction" variant="primary">{{ $editingDeduction ? 'Update' : 'Save' }}</flux:button>
         </x-slot>
     </x-modal>
 </div>
