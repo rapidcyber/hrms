@@ -107,7 +107,14 @@
                     :class="tab === 'payrolls' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'"
                     class="rounded-full border shadow-md px-4 py-2">Payrolls
                 </button>
-
+                @if( count($selectedPayrolls))
+                <button
+                    id="delete-all"
+                    type="button"
+                    wire:click="$set('confirmDeleteAll', 1)"
+                    class="rounded-full text-white border bg-red-500 shadow-md px-4 py-2">Delete All
+                </button>
+                @endif
             </div>
 
             <div x-show="tab === 'employees'" class="bg-white shadow-md rounded-lg overflow-x-auto" role="tabpanel" aria-labelledby="employees-tab">
@@ -235,7 +242,8 @@
                 @endif
             </div>
             <div x-show="tab==='payrolls'">
-                <div class="flex justify-end pb-2">
+                <div class="flex justify-end pb-2 gap-4">
+                    <div class="text-xl">Grand Total: &#8369; <strong class="font-bold text-blue-500">{{number_format($payrolls->sum('net_salary'),2)}}</strong></div>
                     <flux:button
                         size="sm"
                         variant="outline"
@@ -247,6 +255,9 @@
                 </div>
                 <x-flux.table :data="$payrolls">
                     <x-slot name="head">
+                        <x-flux.table.heading>
+                                <input type="checkbox" id="select-all-payroll" wire:model="selectAllPayroll" wire:click="toggleSelectAllPayroll">
+                        </x-flux.table.heading>
                         <x-flux.table.heading>Employee</x-flux.table.heading>
                         <x-flux.table.heading>Period</x-flux.table.heading>
                         <x-flux.table.heading>Total Amount</x-flux.table.heading>
@@ -256,6 +267,9 @@
                     <x-slot name="body">
                         @foreach($payrolls as $payroll)
                             <x-flux.table.row :even="$loop->even">
+                                <x-flux.table.cell>
+                                    <input type="checkbox" wire:model.live="selectedPayrolls" value="{{ $payroll->id }}">
+                                </x-flux.table.cell>
                                 <x-flux.table.cell>
                                     {{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}
                                 </x-flux.table.cell>
@@ -389,6 +403,111 @@
         <x-slot name="footer">
             <flux:button wire:click="$toggle('showDeductionModal')">Cancel</flux:button>
             <flux:button class="ml-2" wire:click.prevent="saveDeduction" variant="primary">{{ $editingDeduction ? 'Update' : 'Save' }}</flux:button>
+        </x-slot>
+    </x-modal>
+    <x-modal
+        wire:show="showPayrollModal"
+        maxWidth="lg"
+        title="Payroll Details"
+    >
+        <div class="flex items-center bg-[#3F507F] p-2 text-white">
+            <img class="size-20" src="{{url('/images/sp_logo.png')}}" alt="" srcset="">
+            <div class="text-center flex-1">
+                <div>
+                    Serbsyong CongPleyto Movement
+                </div>
+                <div class="mt-2">
+                    OFFICE PAYSLIP
+                </div>
+            </div>
+            <img class="size-20" src="{{url('/images/hrp_logo.png')}}" alt="" srcset="">
+        </div>
+        @if($viewingPayroll)
+            <table class="w-full">
+            <thead>
+                <tr>
+                    <th style="width: 35%"></th>
+                    <th style="width: 65%"></th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td>Date:</td>
+                    <td>
+                        {{\Carbon\Carbon::parse($viewingPayroll->period_start)->format('M j, Y')}} - {{\Carbon\Carbon::parse($viewingPayroll->period_end)->format('M j, Y')}}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Name:</td>
+                    <td class="text-white bg-[#3F507F] px-3 py-2">
+                        {{$viewingPayroll->employee->first_name}} {{$viewingPayroll->employee->last_name}}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Basic Payroll:</td>
+                    <td style="font-weight: bold;color:#3F507F">₱ {{ number_format($viewingPayroll->employee->base_salary / 2, 2) }}</td>
+                </tr>
+                <tr>
+                    <td>Over Time:</td>
+                    <td style="font-weight: bold;color:#3F507F">&#8369; {{ number_format($viewingPayroll->overtime_pay, 2) }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-3">Sunday Overtime</td>
+                    <td style="font-weight: bold;color:#3F507F">&#8369; 0.00</td>
+                </tr>
+                <tr>
+                    <td>Lates</td>
+                    <td style="color:red">&#8369; {{ number_format($viewingPayroll->lates, 2) }}</td>
+                </tr>
+                <tr>
+                    <td>Under Time:</td>
+                    <td style="color:red">&#8369; 0.00</td>
+                </tr>
+                @forelse ($viewingPayroll->deductions as $deduction)
+                <tr>
+                    <td>{{ ucfirst($deduction->type)}}: </td>
+                    <td style="color:red;font-weight:bold">₱ {{number_format($deduction->amount,2)}}</td>
+                </tr>
+                @empty
+                    <tr>
+                        <td>Loan: </td>
+                        <td style="color:red;font-weight:bold">₱ 0.00</td>
+                    </tr>
+                    <tr>
+                        <td>Cash Advance: </td>
+                        <td style="color:red;font-weight:bold">₱ 0.00</td>
+
+                    </tr>
+                @endforelse
+                <tr>
+                    <td>Absents</td>
+                    <td style="color:red">₱ {{ number_format($viewingPayroll->absents, 2) }}</td>
+                </tr>
+            </tbody>
+            <tfoot style="background-color:yellowgreen">
+                <tr>
+                    <td class="text-xl px-3 py-2"><strong>Total:</strong></td>
+                    <td><strong class="text-xl">₱ {{ number_format($viewingPayroll->net_salary, 2) }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+        <x-slot name="footer">
+            <flux:button wire:click="$set('showPayrollModal', false)">Close</flux:button>
+            <flux:button wire:click="downloadPayroll({{$viewingPayroll->id}})">Download</flux:button>
+        </x-slot>
+        @endif
+
+    </x-modal>
+
+    {{-- Confirm Delete all --}}
+    <x-modal wire:show="confirmDeleteAll" title="Delete All Payrolls">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            Are you sure you want to delete all selected payroll? This action cannot be undone.
+        </div>
+        <x-slot name="footer">
+            <flux:button wire:click="$set('confirmDeleteAll', false)">Close</flux:button>
+            <flux:button wire:click="deleteAllPayroll()">Delete All</flux:button>
         </x-slot>
     </x-modal>
 </div>

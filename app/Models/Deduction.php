@@ -10,4 +10,9 @@ class Deduction extends Model
     {
         return $this->belongs(Employee::class);
     }
+
+    public function payrolls ()
+    {
+        return $this->belongsToMany(Payroll::class);
+    }
 }

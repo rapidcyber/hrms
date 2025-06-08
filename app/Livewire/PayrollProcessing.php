@@ -17,7 +17,9 @@ class PayrollProcessing extends Component
     // public $employees;
     public $search = '';
     public $selectedEmployees = [];
+    public $selectedPayrolls = [];
     public $selectAll = false;
+    public $selectAllPayroll = false;
     public $showingDeductions = null;
     public $showDeductionModal = false;
     public $editingDeduction = false;
@@ -36,6 +38,9 @@ class PayrollProcessing extends Component
         5 => 'Friday',
         6 => 'Saturday',
     ];
+    public $showPayrollModal = false;
+    public $viewingPayroll;
+    public $confirmDeleteAll = false;
 
     public function mount()
     {
@@ -54,16 +59,9 @@ class PayrollProcessing extends Component
 
         foreach ($this->selectedEmployees as $employeeId) {
 
-
-
-
-
-
             $hours_worked =  Attendance::where('employee_id', $employeeId)
                 ->whereBetween('date',[$cutoffStart, $cutoffEnd])
                 ->sum('hours_worked');
-
-
 
             if(!empty($hours_worked)){
 
@@ -80,15 +78,15 @@ class PayrollProcessing extends Component
                 $payroll->net_salary = $payroll->gross_salary - $payroll->total_deductions;
                 $payroll->status = 'processed';
                 if($payroll->save()){
+                    $deductions = $employee->deductions->where('effective_date', $this->periodEnd);
+                    $payroll->deductions()->attach($deductions->pluck('id')->toArray());
+
                     log_activity('Payroll processed for employee ID: ' . $employee->employee_id);
                     session()->flash('message', 'Payroll processed successfully!');
-                    $this->toggleSelectAll();
+                    $this->selectedEmployees = [];
                 }
             }
-
         }
-
-
     }
 
     public function toggleSelectAll()
@@ -99,6 +97,30 @@ class PayrollProcessing extends Component
         } else {
             $this->selectedEmployees = [];
         }
+    }
+
+    public function toggleSelectAllPayroll()
+    {
+        $payrolls = Payroll::where('period_start', $this->periodStart)->where('period_end', $this->periodEnd)->get();
+        if ($this->selectAllPayroll) {
+            $this->selectedPayrolls = $payrolls->pluck('id')->toArray();
+        } else {
+            $this->selectedPayrolls = [];
+        }
+    }
+
+    public function deleteAllPayroll(){
+        $payrolls = Payroll::whereIn('id', $this->selectedPayrolls)->get();
+        log_activity('Delete selected payrolls',$payrolls->count() . ' Payroll deleted for payroll ID: ' . $payrolls->first());
+        foreach($payrolls as $payroll){
+            if($payroll->deductions->isNotEmpty())
+                $payroll->deductions()->detach();
+            if($payroll->delete()){
+                session()->flash('message', 'Payrolls deleted successfully!');
+                $this->selectedPayrolls = [];
+            }
+        }
+        $this->confirmDeleteAll = false;
     }
 
     public function showDeductions($employeeId)
@@ -230,6 +252,7 @@ class PayrollProcessing extends Component
         $deduction->type = $this->deduction_type ?? 'cash-advance';
         $deduction->amount = $this->deduction_amount ?? 0;
         $deduction->updated_by = auth()->id();
+        $deduction->effective_date = $this->periodEnd;
 
         if(!$this->editingDeduction){
             $deduction->created_by = auth()->id();
@@ -295,18 +318,38 @@ class PayrollProcessing extends Component
         if(empty($this->recentPayrolls)) {
             $this->recentPayrolls = Payroll::orderBy('created_at', 'desc')->take(5)->get();
         }
-        $payrolls = Payroll::where('status', 'processed')
+        $payrolls = Payroll::whereHas('employee',function($q){
+                $q->where('first_name', 'like', '%'. $this->search.'%')
+                ->orWhere('last_name', 'like', '%'. $this->search.'%')
+                ->orWhere('employees.employee_id', 'like', '%' .$this->search.'%');
+           })
+            ->where('status', 'processed')
             ->whereBetween('period_start', [$this->periodStart, $this->periodEnd])
             ->get();
 
         return view('livewire.payroll-processing', compact('employees','payrolls'));
     }
+    // Preview Payrool
     public function viewPayroll($id){
+        $this->showPayrollModal = true;
+        $payroll = Payroll::findOrFail($id);
+
+        $summary = $this->calculateOTLates($payroll->employee_id);
+
+        $payroll->lates = $summary['late_pay'];
+        $payroll->absents = $summary['absents'];
+
+        $this->viewingPayroll = $payroll;
+
+    }
+
+    public function downloadPayroll($id){
         $payroll = Payroll::find($id);
         $summary = $this->calculateOTLates($payroll->employee_id);
 
         $payroll->lates = $summary['late_pay'];
         $payroll->absents = $summary['absents'];
+
         if ($payroll) {
             $pdf = Pdf::loadView('payroll.payslip', ['payroll' => $payroll],[
                 'defaultFont' => 'dejavu sans', // Supports most Unicode symbols
@@ -314,7 +357,7 @@ class PayrollProcessing extends Component
                 'isUnicode' => true,
             ]);
             return response()->streamDownload(function () use ($pdf) {
-                echo $pdf->stream();
+                $pdf->setPaper('A4', 'portrait')->stream();
             }, 'payroll_' . $payroll->id . '.pdf');
         } else {
             session()->flash('error', 'Payroll not found.');

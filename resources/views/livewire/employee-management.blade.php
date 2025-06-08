@@ -4,9 +4,9 @@
             <h1 class="text-2xl font-bold">Employee Management</h1>
             <div>
                 <input wire:model.live="search" type="search" placeholder="Search employees..." class="px-4 bg-white py-2 border rounded-md">
-                <button wire:click="create" class="ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                {{-- <button wire:click="create" class="ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                     Add Employee
-                </button>
+                </button> --}}
             </div>
         </div>
 

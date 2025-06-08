@@ -119,7 +119,5 @@
             </tr>
         </tfoot>
     </table>
-
-    <p>Thank you for your business!</p>
 </body>
 </html>

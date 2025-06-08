@@ -18,6 +18,7 @@ return new class extends Migration
             $table->decimal('amount', 10, 2)->default(0);
             $table->text('description')->nullable();
             $table->json('metadata')->nullable();
+            $table->date('effective_date')->default(now());
             $table->foreignId('created_by')->constrained('users')->nullable();
             $table->foreignId('updated_by')->constrained('users')->nullable();
             $table->timestamps();

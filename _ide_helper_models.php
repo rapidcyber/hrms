@@ -223,11 +223,14 @@ namespace App\Models{
  * @property string $amount
  * @property string|null $description
  * @property string|null $metadata
+ * @property string $effective_date
  * @property int $created_by
  * @property int $updated_by
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Payroll> $payrolls
+ * @property-read int|null $payrolls_count
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Deduction newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Deduction newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Deduction query()
@@ -236,6 +239,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Deduction whereCreatedBy($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Deduction whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Deduction whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Deduction whereEffectiveDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Deduction whereEmployeeId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Deduction whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Deduction whereMetadata($value)
@@ -429,6 +433,8 @@ namespace App\Models{
  * @property string|null $payment_date
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Deduction> $deductions
+ * @property-read int|null $deductions_count
  * @property-read \App\Models\Employee $employee
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payroll newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payroll newQuery()

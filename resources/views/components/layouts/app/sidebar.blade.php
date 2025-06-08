@@ -13,7 +13,7 @@
             </a>
 
             <flux:navlist variant="outline">
-                <flux:navlist.group :heading="__('HR Managment System')" class="grid">
+                <flux:navlist.group :heading="__('Payroll Managment System')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                     <flux:navlist.item icon="users" :href="route('employees')" :current="request()->routeIs('employees')" wire:navigate>{{ __('Employees') }}</flux:navlist.item>
                     <flux:navlist.item icon="calendar-clock" :href="route('attendance')" :current="request()->routeIs('attendance')" wire:navigate>{{ __('Attendance') }}</flux:navlist.item>
@@ -21,8 +21,8 @@
                     <flux:navlist.item icon="building-2" :href="route('departments')" :current="request()->routeIs('departments')" wire:navigate>{{ __('Departments') }}</flux:navlist.item>
                     <flux:navlist.item icon="award" :href="route('positions')" :current="request()->routeIs('positions')" wire:navigate>{{ __('Positions') }}</flux:navlist.item>
                     {{-- <flux:navlist.item icon="book-open-text" :href="route('deductions')" :current="request()->routeIs('deductions')" wire:navigate>{{ __('Deductions') }}</flux:navlist.item> --}}
-                    <flux:navlist.item icon="party-popper" :href="route('holidays')" :current="request()->routeIs('holidays')" wire:navigate>{{ __('Holidays') }}</flux:navlist.item>
-                    <flux:navlist.item icon="stethoscope" :href="route('leaves')" :current="request()->routeIs('leaves')" wire:navigate>{{ __('Leaves') }}</flux:navlist.item>
+                    {{-- <flux:navlist.item icon="party-popper" :href="route('holidays')" :current="request()->routeIs('holidays')" wire:navigate>{{ __('Holidays') }}</flux:navlist.item> --}}
+                    {{-- <flux:navlist.item icon="stethoscope" :href="route('leaves')" :current="request()->routeIs('leaves')" wire:navigate>{{ __('Leaves') }}</flux:navlist.item> --}}
                     @if (auth()->id() === 1)
                     <flux:navlist.item icon="key" :href="route('user-management')" :current="request()->routeIs('user-management')" wire:navigate>{{ __('User Mangement') }}</flux:navlist.item>
                     @endif
@@ -36,9 +36,9 @@
                 {{ __('Repository') }}
                 </flux:navlist.item> --}}
 
-                <flux:navlist.item icon="book-open-text" href="#" target="_blank">
+                {{-- <flux:navlist.item icon="book-open-text" href="#" target="_blank">
                 {{ __('Documentation') }}
-                </flux:navlist.item>
+                </flux:navlist.item> --}}
             </flux:navlist>
 
             <!-- Desktop User Menu -->
