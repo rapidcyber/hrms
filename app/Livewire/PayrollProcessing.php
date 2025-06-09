@@ -14,8 +14,7 @@ class PayrollProcessing extends Component
 {
     public $periodStart;
     public $periodEnd;
-    // public $employees;
-    public $search = '';
+    public $search = '', $sortField = 'first_name', $sortDirection = 'asc';
     public $selectedEmployees = [];
     public $selectedPayrolls = [];
     public $selectAll = false;
@@ -238,6 +237,16 @@ class PayrollProcessing extends Component
 
     }
 
+    public function loadEmployees()
+    {
+        $this->validate([
+            'periodStart' => 'required|date',
+            'periodEnd' => 'required|date|after_or_equal:periodStart',
+        ]);
+        $this->selectedEmployees = [];
+        $this->selectedPayrolls = [];
+    }
+
     public function saveDeduction()
     {
         $this->validate([
@@ -305,9 +314,7 @@ class PayrollProcessing extends Component
                 ->orWhere('last_name', 'like', '%'. $this->search.'%')
                 ->orWhere('employee_id', 'like', '%' .$this->search.'%');
             })
-            // ->where('first_name', 'like', '%'. $this->search.'%')
-            //       ->orWhere('last_name', 'like', '%'. $this->search.'%')
-            //       ->orWhere('employee_id', 'like', '%' .$this->search.'%')
+            ->orderBy($this->sortField, $this->sortDirection)
             ->get();
 
         // dd($weekMap[now()->dayOfWeek()]);

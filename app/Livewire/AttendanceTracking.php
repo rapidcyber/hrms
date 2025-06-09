@@ -85,11 +85,11 @@ class AttendanceTracking extends Component
         });
 
 
-            35830 => array:4 [▼
-      "bio_id" => 66449550848
-      "employee_id" => 20
-      "in_out_mode" => 1
-      "timestamp" => 
+            // 35830 => array:4 [▼
+    //   "bio_id" => 66449550848
+    //   "employee_id" => 20
+    //   "in_out_mode" => 1
+    //   "timestamp" =>
 // Carbon
 // \
 // Carbon @1749459191
@@ -99,7 +99,7 @@ class AttendanceTracking extends Component
 //       "bio_id" => 66181111328
 //       "employee_id" => 12
 //       "in_out_mode" => 1
-//       "timestamp" => 
+//       "timestamp" =>
 // Carbon
 // \
 // Carbon @1749457350
@@ -109,7 +109,7 @@ class AttendanceTracking extends Component
 //       "bio_id" => 65912680016
 //       "employee_id" => 25
 //       "in_out_mode" => 1
-//       "timestamp" => 
+//       "timestamp" =>
 // Carbon
 // \
 // Carbon @1749457269
@@ -119,7 +119,7 @@ class AttendanceTracking extends Component
 //       "bio_id" => 65644240496
 //       "employee_id" => 17
 //       "in_out_mode" => 1
-//       "timestamp" => 
+//       "timestamp" =>
 // Carbon
 // \
 // Carbon @1749456933
@@ -159,13 +159,13 @@ class AttendanceTracking extends Component
                     $employee->save();
                 }
                 $date = '';
-                
+
 
                 foreach($punches as $punch){
                     //check attendance exists
 
-                    
-                         
+
+
 
 
 
@@ -177,7 +177,7 @@ class AttendanceTracking extends Component
         }
 
 
-        
+
         // $filePath = public_path('uploads/attendances.xls'); // or .csv
 
         // Excel::import(new AttendanceImport, $filePath);
@@ -267,7 +267,7 @@ class AttendanceTracking extends Component
         $attendance = Attendance::find($this->confirmDelete);
 
         if ($attendance) {
-            log_activity('Attendance deleted', 'Attendance record deleted for employee ID ' . $attendance->employee->employee_id, $attendance->id, []);
+            log_activity('Attendance deleted', 'Attendance record deleted for employee ID #' . $attendance->employee->employee_id, $attendance);
             session()->flash('message', 'Attendance deleted successfully.');
             $attendance->delete();
             $this->confirmDelete = false;
