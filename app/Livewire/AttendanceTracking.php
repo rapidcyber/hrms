@@ -10,6 +10,8 @@ use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\AttendanceImport;
 use Livewire\WithFileUploads;
+use Laradevsbd\Zkteco\Http\Library\ZktecoLib;
+use Illuminate\Support\Facades\DB;
 
 class AttendanceTracking extends Component
 {
@@ -65,12 +67,123 @@ class AttendanceTracking extends Component
 
     public function syncBiometricData()
     {
-        $filePath = public_path('uploads/attendances.xls'); // or .csv
 
-        Excel::import(new AttendanceImport, $filePath);
+        $zk = new ZktecoLib('192.168.1.142', 4370); // Default port: 4370
+        $zk->connect();
+        // $users = $zk->getUser();
+        $attendances = $zk->getAttendance();
 
-        log_activity('Biometric data synced', 'Biometric data synced via import', null, []);
-        session()->flash('message', 'Biometric data synced successfully.');
+        // Convert array to a Laravel Collection for easier manipulation
+        $punches = collect($attendances)->map(function ($record) {
+            return [
+                'bio_id' => $record[0],
+                'employee_id' => $record[1],
+                'in_out_mode' => $record[2],
+                // 'timestamp' => Carbon::parse($record[3]),
+                'timestamp' => Carbon::parse($record[3]),
+            ];
+        });
+
+
+            35830 => array:4 [▼
+      "bio_id" => 66449550848
+      "employee_id" => 20
+      "in_out_mode" => 1
+      "timestamp" => 
+// Carbon
+// \
+// Carbon @1749459191
+//  {#37467 ▶}
+//     ]
+//     35829 => array:4 [▼
+//       "bio_id" => 66181111328
+//       "employee_id" => 12
+//       "in_out_mode" => 1
+//       "timestamp" => 
+// Carbon
+// \
+// Carbon @1749457350
+//  {#37466 ▶}
+//     ]
+//     35828 => array:4 [▼
+//       "bio_id" => 65912680016
+//       "employee_id" => 25
+//       "in_out_mode" => 1
+//       "timestamp" => 
+// Carbon
+// \
+// Carbon @1749457269
+//  {#37465 ▶}
+//     ]
+//     35827 => array:4 [▼
+//       "bio_id" => 65644240496
+//       "employee_id" => 17
+//       "in_out_mode" => 1
+//       "timestamp" => 
+// Carbon
+// \
+// Carbon @1749456933
+//  {#37464 ▶}
+//     ]
+
+
+        dd($punches->sortByDesc('timestamp')->take(100));
+
+        try {
+            DB::transaction(function () use ($users, $attendances) {
+                foreach($users as $user){
+                    // check if employee exists
+                    $employee = Employee::where('employee_id', $user[0])->first() ?? new Employee;
+                    $employee->employee_id = $user[0];
+                    $employeeName = explode('.',trim($user[0]));
+                    $employee->first_name = $employeeName[0];
+                    $employee->last_name = $employeeName[1] ?? '';
+                    $employee->email = $user[0] .'changethis@email.com';
+                    $employee->phone = '+639000000000';
+                    $employee->date_of_birth = '2000-01-01';
+                    $employee->hire_date = now()->format('Y-m-d');
+                    $employee->base_salary = 0.00;
+                    $employee->department_id = 5;
+                    $employee->position_id = 6;
+                    $employee->shift_id = 1;
+                    $restDays = [
+                        0=> 'Sunday',
+                        1 => null,
+                        2 => null,
+                        3 => null,
+                        4 => null,
+                        5 => null,
+                        6 => 'Saturday'
+                    ];
+                    $employee->rest_days = json_encode($restDays);
+                    $employee->save();
+                }
+                $date = '';
+                
+
+                foreach($punches as $punch){
+                    //check attendance exists
+
+                    
+                         
+
+
+
+                }
+            });
+        } catch (\Throwable $th) {
+            //throw $th;
+            dd($th);
+        }
+
+
+        
+        // $filePath = public_path('uploads/attendances.xls'); // or .csv
+
+        // Excel::import(new AttendanceImport, $filePath);
+
+        // log_activity('Biometric data synced', 'Biometric data synced via import', null, []);
+        // session()->flash('message', 'Biometric data synced successfully.');
     }
 
     public function create(){

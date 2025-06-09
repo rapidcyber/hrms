@@ -15,7 +15,7 @@
                     id="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" class="hidden">
 
                 <x-flux::button @click="document.getElementById('file').click()" icon="import">Import</x-flux::button>
-                <x-flux::button variant="primary" icon="refresh-ccw">Sync</x-flux::button>
+                <x-flux::button variant="primary" icon="refresh-ccw" wire:click="syncBiometricData">Sync</x-flux::button>
             </div>
         </div>
         @if ($errors->any())

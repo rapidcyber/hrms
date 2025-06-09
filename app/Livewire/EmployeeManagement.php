@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Laradevsbd\Zkteco\Http\Library\ZktecoLib;
 
 class EmployeeManagement extends Component
 {
@@ -205,6 +206,48 @@ class EmployeeManagement extends Component
     public function sort($sort){
         $this->sortField = $sort;
         $this->sortDirection = ($this->sortDirection == 'asc') ? 'desc' : 'asc';
+    }
+
+    public function syncEmployees(){
+        $zk = new ZktecoLib('192.168.1.142', 4370); // Default port: 4370
+        $zk->connect();
+        $users = $zk->getUser();
+
+        try {
+            DB::transaction(function () use ($users) {
+                foreach($users as $user){
+                    // check if employee exists
+                    $employee = Employee::where('employee_id', $user[0])->first() ?? new Employee;
+                    $employee->employee_id = $user[0];
+                    $employeeName = explode('.',trim($user[1]));
+                    $employee->first_name = $employeeName[0];
+                    $employee->last_name = $employeeName[1] ?? '';
+                    $employee->email = $user[0] .'changethis@email.com';
+                    $employee->phone = '+639000000000';
+                    $employee->date_of_birth = '2000-01-01';
+                    $employee->hire_date = now()->format('Y-m-d');
+                    $employee->base_salary = 0.00;
+                    $employee->department_id = 5;
+                    $employee->position_id = 6;
+                    $employee->shift_id = 1;
+                    $restDays = [
+                        0=> 'Sunday',
+                        1 => null,
+                        2 => null,
+                        3 => null,
+                        4 => null,
+                        5 => null,
+                        6 => 'Saturday'
+                    ];
+                    $employee->rest_days = json_encode($restDays);
+                    $employee->save();
+                }
+            });
+        } catch (\Throwable $th) {
+            //throw $th;\
+            dd($th);
+        }
+
     }
 
     private function resetInputFields()
