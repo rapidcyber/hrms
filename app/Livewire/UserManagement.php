@@ -45,6 +45,7 @@ class UserManagement extends Component
         $this->refreshUsers();
         $this->userData = [];
         session()->flash('success', 'User created successfully.');
+        $this->closeUserModal();
     }
 
     public function editUser($userId)

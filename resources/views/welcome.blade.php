@@ -40,7 +40,7 @@
                         </flux:button>
 
                         @else
-                        <p class="mb-6 text-[#706f6c] dark:text-[#A1A09A]">To get started, please log in to your account.</p>
+                        <p class="mb-6 text-[#706f6c] text-xs dark:text-[#A1A09A]">To get started, please log in to your account.</p>
                         <flux:button
                             class="w-full"
                             variant="primary"
