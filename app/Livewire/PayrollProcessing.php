@@ -192,7 +192,6 @@ class PayrollProcessing extends Component
             if( in_array(Carbon::parse($attendance->date)->dayOfWeek(), $restDays)){
                 if(!empty($attendance->hours_worked)){
                     $summary['overtime'] += $attendance->hours_worked;
-                    dd($summary['overtime'],$attendance->date, Carbon::parse($attendance->date)->dayOfWeek());
                 }
             }
 
