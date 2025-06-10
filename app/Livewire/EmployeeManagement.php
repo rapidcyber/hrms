@@ -182,11 +182,11 @@ class EmployeeManagement extends Component
 
         }
         if ($employee->payrolls()->exists()) {
-
             $employee->payrolls()->delete();
-
         }
-        $employee->deductions()->detach();
+        foreach ($employee->deductions as $deduction) {
+            $deduction->delete();
+        }
         $log = [
             'action' => 'delete_employee',
             'description' => '#'.$employee->employee_id . ' '. $employee->first_name. ' '.$employee->last_name . ' ' . 'deleted.'
