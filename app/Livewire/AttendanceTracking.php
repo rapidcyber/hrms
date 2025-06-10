@@ -296,8 +296,19 @@ class AttendanceTracking extends Component
         $attendance->date = $this->date;
         $attendance->in_1 = $this->checkIn;
         $attendance->out_1 = $this->checkOut;
+        $attendance->in_2 = null; // Assuming no second check-in
+        $attendance->out_2 = null; // Assuming no second check-out
+        $attendance->in_3 = null; // Assuming no third check-in
+        $attendance->out_3 = null; // Assuming no third check-out
         $attendance->status = $this->status;
         $attendance->remarks = $this->remarks;
+        $attendance->hours_worked = 0; // Default to 0, will be calculated later
+
+        $attendance->hours_worked = Carbon::parse($this->checkIn)->diffInMinutes(Carbon::parse($this->checkOut)) / 60;
+
+        if ($attendance->hours_worked < 0) {
+            $attendance->hours_worked = 0; // Prevent negative hours
+        }
         $attendance->source = 'manual';
 
         if($attendance->save()){
