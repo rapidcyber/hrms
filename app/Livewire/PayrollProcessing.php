@@ -189,10 +189,10 @@ class PayrollProcessing extends Component
         // Calculate Overtime and lates
         foreach ($attendances as $attendance){
 
-            if( array_key_exists(Carbon::parse($attendance->date)->dayOfWeek(), $restDays)){
+            if( in_array(Carbon::parse($attendance->date)->dayOfWeek(), $restDays)){
                 if(!empty($attendance->hours_worked)){
-                    // $attendance->hours_worked = $attendance->hours_worked > 8 ? 8 : $attendance->hours_worked;
                     $summary['overtime'] += $attendance->hours_worked;
+                    dd($summary['overtime'],$attendance->date, Carbon::parse($attendance->date)->dayOfWeek());
                 }
             }
 
@@ -209,7 +209,7 @@ class PayrollProcessing extends Component
                         $summary['late_pay'] = $summary['lates'] * $hourlyRate;
                     }
 
-                    if(($attendance->hours_worked)-1 > $shiftHours ){
+                    if(($attendance->hours_worked - 1) > $shiftHours ){
                         $summary['overtime'] += $attendance->hours_worked - $shiftHours;
                         $summary['ot_pay'] += $summary['overtime'] * $hourlyRate;
                     }
@@ -220,6 +220,7 @@ class PayrollProcessing extends Component
                 }
             }
         }
+
         return $summary;
     }
 
@@ -355,6 +356,17 @@ class PayrollProcessing extends Component
         $this->viewingPayroll = $payroll;
 
     }
+
+    public function sortBy($field)
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
+        }
+    }
+    // Download Payroll
 
     public function downloadPayroll($id){
         $payroll = Payroll::find($id);

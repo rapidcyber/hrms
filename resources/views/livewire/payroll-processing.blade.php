@@ -116,9 +116,11 @@
                     wire:target="processPayroll, showDeductions, deleteDeduction, editDeduction, deletePayroll, viewPayroll">
                     <x-slot name="head">
                         <x-flux.table.heading>
-                            <input type="checkbox" wire:model="selectAll" wire:click="toggleSelectAll">
+                            <flux:tooltip content="Select All Employees" placement="top">
+                                <input type="checkbox" wire:model="selectAll" wire:click="toggleSelectAll">
+                            </flux:tooltip>
                         </x-flux.table.heading>
-                        <x-flux.table.heading>Employee</x-flux.table.heading>
+                        <x-flux.table.heading sortable sort-by="first_name" direction="{{$sortDirection}}">Employee</x-flux.table.heading>
                         <x-flux.table.heading>Department</x-flux.table.heading>
                         <x-flux.table.heading>Base Salary</x-flux.table.heading>
                         <x-flux.table.heading>Shift</x-flux.table.heading>
@@ -130,7 +132,7 @@
                                 <x-flux.table.cell>
                                     <input type="checkbox" wire:model.live="selectedEmployees" value="{{ $employee->id }}">
                                 </x-flux.table.cell>
-                                <x-flux.table.cell>
+                                <x-flux.table.cell class="font-medium text-gray-900">
                                     {{ $employee->first_name }} {{ $employee->last_name }}
                                 </x-flux.table.cell>
                                 <x-flux.table.cell>

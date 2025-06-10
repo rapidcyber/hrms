@@ -9,6 +9,7 @@ use Livewire\WithPagination;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\AttendanceImport;
+use App\Exports\AttendanceExport;
 use Livewire\WithFileUploads;
 use Laradevsbd\Zkteco\Http\Library\ZktecoLib;
 use Illuminate\Support\Facades\DB;
@@ -265,6 +266,16 @@ class AttendanceTracking extends Component
 
 
         session()->flash('message', 'Attendance data imported successfully.');
+    }
+
+    public function export()
+    {
+        $this->validate([
+            'periodStart' => 'required|date',
+            'periodEnd' => 'required|date|after_or_equal:periodStart',
+        ]);
+
+        return Excel::download(new AttendanceExport(['start_date' => $this->periodStart, 'end_date' => $this->periodEnd]), 'attendance_' . now()->format('Y-m-d') . '.xlsx');
     }
 
     public function store()
