@@ -70,7 +70,6 @@ class AttendanceTracking extends Component
 
         $zk = new ZktecoLib('192.168.1.142', 4370); // Default port: 4370
         $zk->connect();
-        $users = $zk->getUser();
         $attendances = $zk->getAttendance();
 
         // Convert array to a Laravel Collection for easier manipulation
