@@ -70,84 +70,128 @@ class AttendanceTracking extends Component
 
         $zk = new ZktecoLib('192.168.1.142', 4370); // Default port: 4370
         $zk->connect();
-        // $users = $zk->getUser();
+        $users = $zk->getUser();
         $attendances = $zk->getAttendance();
 
         // Convert array to a Laravel Collection for easier manipulation
+
+        // $attendances = [
+        //     [66449550848, 20, 1, '2025-06-09 07:59:51'],
+        //     [66449550848, 20, 1, '2025-06-09 08:59:51'],
+        //     [66449550848, 20, 1, '2025-06-09 17:59:51'],
+        //     [66181111328, 12, 1, '2025-06-09 08:55:50'],
+        //     [66181111328, 12, 1, '2025-06-09 08:56:50'],
+        //     [66181111328, 12, 1, '2025-06-09 16:56:50'],
+        //     [65912680016, 25, 1, '2025-06-09 08:54:29'],
+        //     [65912680016, 25, 1, '2025-06-09 17:54:29'],
+        //     [65644240496, 17, 1, '2025-06-09 09:48:53'],
+        //     [65644240496, 17, 1, '2025-06-09 15:48:53'],
+        //     [65375800976, 18, 1, '2025-06-09 09:47:11'],
+        //     [65375800976, 18, 1, '2025-06-09 17:47:11'],
+        //     [65109361456, 19, 1, '2025-06-09 09:46:30'],
+        //     [65109361456, 19, 1, '2025-06-09 18:46:30'],
+        //     [64838921936, 21, 1, '2025-06-09 09:45:49'],
+        //     [64838921936, 21, 1, '2025-06-09 15:45:49'],
+        //     [64570482416, 22, 1, '2025-06-09 09:44:48'],
+        //     [64570482416, 22, 1, '2025-06-09 16:44:48'],
+        //     [64302042896, 23, 1, '2025-06-09 09:43:47'],
+        //     [64302042896, 23, 1, '2025-06-09 17:43:47'],
+        //     [64033503376, 24, 1, '2025-06-09 08:42:46'],
+        //     [64033503376, 24, 1, '2025-06-09 17:42:46'],
+        //     [63764963856, 26, 1, '2025-06-09 08:41:45'],
+        //     [63764963856, 26, 1, '2025-06-09 16:41:45'],
+        //     [63496424336, 27, 1, '2025-06-09 08:40:44'],
+        //     [63227884816, 28, 1, '2025-06-09 08:39:43'],
+        //     [62959345296, 29, 1, '2025-06-09 08:38:42'],
+        //     [62690805776, 30, 1, '2025-06-09 08:37:41'],
+        //     [62422266256, 31, 1, '2025-06-09 08:36:40'],
+        //     [62153726736, 32, 1, '2025-06-09 08:35:39'],
+        //     [61885187216, 33, 1, '2025-06-09 08:34:38'],
+        //     [61616647696, 34, 1, '2025-06-09 08:33:37'],
+        //     [61348108176, 35, 1, '2025-06-09 07:32:36'],
+        //     [61099568656, 36, 1, '2025-06-09 08:31:35'],
+        //     [61099568656, 36, 1, '2025-06-09 05:31:35'],
+        //     [60811029136, 37, 1, '2025-06-09 08:30:34'],
+        //     [60542489616, 38, 1, '2025-06-09 08:29:33'],
+        //     [60273950096, 39, 1, '2025-06-09 08:28:32'],
+        //     [60005410576, 40, 1, '2025-06-09 08:27:31'],
+        //     [59736871056, 41, 1, '2025-06-09 08:26:30'],
+        //     [59468331536, 42, 1, '2025-06-09 08:25:29'],
+        //     [59199792016, 43, 1, '2025-06-09 08:24:28'],
+        //     // Add more records as needed
+        // ];
+
         $punches = collect($attendances)->map(function ($record) {
             return [
                 'bio_id' => $record[0],
                 'employee_id' => $record[1],
                 'in_out_mode' => $record[2],
-                // 'timestamp' => Carbon::parse($record[3]),
                 'timestamp' => Carbon::parse($record[3]),
             ];
         });
 
-
-            // 35830 => array:4 [▼
-    //   "bio_id" => 66449550848
-    //   "employee_id" => 20
-    //   "in_out_mode" => 1
-    //   "timestamp" =>
-// Carbon
-// \
-// Carbon @1749459191
-//  {#37467 ▶}
-//     ]
-//     35829 => array:4 [▼
-//       "bio_id" => 66181111328
-//       "employee_id" => 12
-//       "in_out_mode" => 1
-//       "timestamp" =>
-// Carbon
-// \
-// Carbon @1749457350
-//  {#37466 ▶}
-//     ]
-//     35828 => array:4 [▼
-//       "bio_id" => 65912680016
-//       "employee_id" => 25
-//       "in_out_mode" => 1
-//       "timestamp" =>
-// Carbon
-// \
-// Carbon @1749457269
-//  {#37465 ▶}
-//     ]
-//     35827 => array:4 [▼
-//       "bio_id" => 65644240496
-//       "employee_id" => 17
-//       "in_out_mode" => 1
-//       "timestamp" =>
-// Carbon
-// \
-// Carbon @1749456933
-//  {#37464 ▶}
-//     ]
-
-
-        dd($punches->sortByDesc('timestamp')->take(100));
-
         try {
-            DB::transaction(function () use ($users, $attendances) {
-                foreach($users as $user){
-                    // check if employee exists
-                    $employee = Employee::where('employee_id', $user[0])->first() ?? new Employee;
-                    $employee->employee_id = $user[0];
-                    $employeeName = explode('.',trim($user[0]));
-                    $employee->first_name = $employeeName[0];
-                    $employee->last_name = $employeeName[1] ?? '';
-                    $employee->email = $user[0] .'changethis@email.com';
-                    $employee->phone = '+639000000000';
-                    $employee->date_of_birth = '2000-01-01';
-                    $employee->hire_date = now()->format('Y-m-d');
-                    $employee->base_salary = 0.00;
-                    $employee->department_id = 5;
-                    $employee->position_id = 6;
-                    $employee->shift_id = 1;
+            DB::transaction(function () use ($punches) {
+                foreach ($punches as $punch) {
+                    $attendance = Attendance::where('employee_id', $punch['employee_id'])
+                        ->whereDate('date', $punch['timestamp']->toDateString())
+                        ->first();
+
+                    $employee = Employee::find($punch['employee_id']);
+                    if (!$employee) {
+                        continue; // Skip if employee not found
+                    }
+                    // If attendance record does not exist, create a new one
+                    if (!$attendance) {
+                        $attendance = new Attendance();
+                        $attendance->employee_id = $punch['employee_id'];
+                        $attendance->date = $punch['timestamp']->toDateString();
+                    }
+
+                    // Set in/out pairs based on in_out_mode
+                    $time = $punch['timestamp'];
+
+                    // Set in/out pairs based on shift
+                    // Assume shift has start_time and end_time (e.g., '08:00:00', '17:00:00')
+                    $shift = $employee->shift;
+                    $shiftStart = $shift && $shift->start_time ? Carbon::parse($attendance->date . ' ' . $shift->start_time) : Carbon::parse($attendance->date . ' 08:00:00');
+                    $shiftEnd = $shift && $shift->end_time ? Carbon::parse($attendance->date . ' ' . $shift->end_time) : Carbon::parse($attendance->date . ' 17:00:00');
+
+                    // Collect all punches for this employee and date
+                    $allPunches = $punches->filter(function ($p) use ($punch) {
+                        return $p['employee_id'] === $punch['employee_id'] && $p['timestamp']->toDateString() === $punch['timestamp']->toDateString();
+                    })->sortBy('timestamp')->values();
+                    // Assign in/out pairs
+                    if ($allPunches->count() > 0) {
+                        // First punch is check-in
+                        $attendance->in_1 = $allPunches[0]['timestamp'];
+                        // If more than 1 punch, last punch is check-out
+                        if ($allPunches->count() > 1) {
+                            $attendance->out_1 = $allPunches[$allPunches->count() - 1]['timestamp'];
+                        }
+                        // If more than 2 punches, second punch is out_2 (break out), third punch is in_2 (break in)
+                        if ($allPunches->count() > 2) {
+                            $attendance->in_2 = $allPunches[1]['timestamp'];
+                            $attendance->out_2 = $allPunches[2]['timestamp'];
+                        }
+                        // If more than 3 punches, last punch is out_3 (final checkout)
+                        if ($allPunches->count() > 3) {
+                            $attendance->out_3 = $allPunches[$allPunches->count() - 1]['timestamp'];
+                        }
+                    }
+
+                    $status = 'present';
+                    $checkIn = $attendance->in_1 ?? $attendance->in_2 ?? $attendance->in_3;
+                    $checkOut = $attendance->out_3 ?? $attendance->out_2 ?? $attendance->out_1;
+                    if ($checkIn && Carbon::parse($checkIn)->gt(Carbon::parse($shift->time_in))) {
+                        $status = 'late';
+                    }
+
+                    if (is_null($checkIn)) {
+                        $status = 'absent';
+                    }
                     $restDays = [
-                        0=> 'Sunday',
+                        0 => 'Sunday',
                         1 => null,
                         2 => null,
                         3 => null,
@@ -155,35 +199,54 @@ class AttendanceTracking extends Component
                         5 => null,
                         6 => 'Saturday'
                     ];
-                    $employee->rest_days = json_encode($restDays);
-                    $employee->save();
-                }
-                $date = '';
+                    if (in_array(Carbon::parse($attendance->date)->dayOfWeek(), array_keys(array_filter($restDays)))) {
+                        $status = 'rest-day';
+                    }
+                    if ($employee->shift_id === 3) {
+                        $restDays = [
+                            0 => null,
+                            1 => null,
+                            2 => null,
+                            3 => null,
+                            4 => null,
+                            5 => null,
+                            6 => 'Saturday'
+                        ];
+                    }
+                    $attendance->status = $status;
+                    $attendance->source = 'biometric';
+                    // Set hours based on shift
+                    $shift = $employee->shift;
+                    $shiftId = 1;
+                    if ($shift) {
+                        $shiftId = $shift->id;
+                    }
+                    $attendance->hours_worked = 0;
+                    if ($checkIn && $checkOut) {
+                        $attendance->hours_worked = Carbon::parse($checkIn)->diffInMinutes(Carbon::parse($checkOut)) / 60;
+                    }
 
+                    if ($checkIn && $checkOut && $attendance->hours_worked > 0 && $attendance->hours_worked < 5) {
+                        $status = 'half-day';
+                    }
 
-                foreach($punches as $punch){
-                    //check attendance exists
+                    if ($status === 'present' || $status === 'late') {
+                        $attendance->hours_worked = $attendance->hours_worked - 1; // Ensure hours_worked is set
+                    }
 
-
-
-
-
-
+                    if ($attendance->hours_worked < 0) {
+                        $attendance->hours_worked = 0; // Prevent negative hours
+                    }
+                    // Save the attendance record
+                    $attendance->save();
                 }
             });
+            log_activity('attendance_synced', 'Biometric data synced via ZKTeco import', null, []);
+            session()->flash('message', 'Biometric data synced successfully.');
         } catch (\Throwable $th) {
             //throw $th;
             dd($th);
         }
-
-
-
-        // $filePath = public_path('uploads/attendances.xls'); // or .csv
-
-        // Excel::import(new AttendanceImport, $filePath);
-
-        // log_activity('Biometric data synced', 'Biometric data synced via import', null, []);
-        // session()->flash('message', 'Biometric data synced successfully.');
     }
 
     public function create(){

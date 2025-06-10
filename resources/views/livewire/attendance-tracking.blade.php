@@ -190,11 +190,11 @@
             @endif
         </div>
         <x-slot name="footer">
-            <button wire:click.prevent="store" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                {{ $attendanceId ? 'Update' : 'Add New' }}
-            </button>
-            <button wire:click="$set('isOpen', false)" class="ml-4 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+            <button wire:click="$set('isOpen', false)" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
                 Cancel
+            </button>
+            <button wire:click.prevent="store" class="ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                {{ $attendanceId ? 'Update' : 'Add New' }}
             </button>
         </x-slot>
     </x-modal>

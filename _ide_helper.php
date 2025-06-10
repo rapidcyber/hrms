@@ -24301,6 +24301,27 @@ namespace Illuminate\Http {
             }
     }
 
+namespace Illuminate\Routing {
+    /**
+     * 
+     *
+     */
+    class Route {
+        /**
+         * 
+         *
+         * @see \Livewire\Features\SupportLazyLoading\SupportLazyLoading::registerRouteMacro()
+         * @param mixed $enabled
+         * @static 
+         */
+        public static function lazy($enabled = true)
+        {
+            return \Illuminate\Routing\Route::lazy($enabled);
+        }
+
+            }
+    }
+
 namespace Illuminate\View {
     /**
      * 
@@ -24438,27 +24459,6 @@ namespace Illuminate\View {
         public static function response($callback)
         {
             return \Illuminate\View\View::response($callback);
-        }
-
-            }
-    }
-
-namespace Illuminate\Routing {
-    /**
-     * 
-     *
-     */
-    class Route {
-        /**
-         * 
-         *
-         * @see \Livewire\Features\SupportLazyLoading\SupportLazyLoading::registerRouteMacro()
-         * @param mixed $enabled
-         * @static 
-         */
-        public static function lazy($enabled = true)
-        {
-            return \Illuminate\Routing\Route::lazy($enabled);
         }
 
             }
