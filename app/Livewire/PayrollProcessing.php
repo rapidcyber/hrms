@@ -41,6 +41,10 @@ class PayrollProcessing extends Component
     public $viewingPayroll;
     public $confirmDeleteAll = false;
 
+    protected $listeners = [
+        'loadEmployees' => '$refresh',
+    ];
+
     public function mount()
     {
         // $this->employees = collect();
@@ -125,7 +129,7 @@ class PayrollProcessing extends Component
     public function showDeductions($employeeId)
     {
         // Compute daily and hourly rate
-        $this->showingDeductions = $employeeId;
+        $this->showingDeductions = $this->showingDeductions === $employeeId ? null : $employeeId;
 
         $this->summary = $this->calculateOTLates($employeeId);
     }
@@ -237,14 +241,16 @@ class PayrollProcessing extends Component
 
     }
 
-    public function loadEmployees()
+    public function reloadEmployees()
     {
+        $this->dispatch('loadEmployees');
         $this->validate([
             'periodStart' => 'required|date',
             'periodEnd' => 'required|date|after_or_equal:periodStart',
         ]);
         $this->selectedEmployees = [];
         $this->selectedPayrolls = [];
+
     }
 
     public function saveDeduction()

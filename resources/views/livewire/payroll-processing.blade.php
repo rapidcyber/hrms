@@ -24,17 +24,22 @@
                     label="Cut-off Start"/>
             </div>
             <div>
-                <x-flux::input
-                    type="date"
-                    wire:model="periodEnd"
-                    label="Cut-off End" />
+                <flux:field>
+                    <x-flux::input
+                        type="date"
+                        wire:model="periodEnd"
+                        label="Cut-off End" />
+                    <flux:error
+                        name="periodEnd"
+                        class="hidden"/>
+                </flux:field>
             </div>
-            <div class="flex items-end">
+            <div>
+                <div>&nbsp;</div>
                 <flux:button
                     icon="list-restart"
                     variant="primary"
-                    wire:click="$refresh"
-                    @click="$wire.loadEmployees()"
+                    wire:click="reloadEmployees"
                 >
                     Load Employees
                 </flux:button>
@@ -45,17 +50,6 @@
         <div class="mt-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">
             <p>{{ session('message') }}</p>
         </div>
-        @endif
-
-        <!-- Validation Errors -->
-        @if ($errors->any())
-            <div class="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700">
-                <ul class="list-disc pl-5">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
         @endif
         <!-- Employee Selection and Summary -->
         <div x-data="{
@@ -182,10 +176,10 @@
                                                 </span>
                                             </div>
                                         </div>
-                                        @forelse ($employee->deductions as $deduction)
+                                        @foreach ($employee->deductions as $deduction)
                                             <div class="border bg-white rounded-md p-3 flex gap-2 items-center justify-between">
-                                                <div class="flex justify-between">
-                                                    <span class="text-sm font-medium capitalize">{{ $deduction->type }}</span>
+                                                <div class="flex gap-4">
+                                                    <span class="text-sm font-medium capitalize">{{ $deduction->type }}:</span>
                                                     <span class="text-sm text-gray-600">
                                                         {{ $deduction->amount }}
                                                     </span>
@@ -209,11 +203,7 @@
                                                     </flux:button>
                                                 </div>
                                             </div>
-                                        @empty
-                                            <div class="border bg-white rounded-md p-3">
-                                                <span class="text-sm text-gray-600">No deductions found.</span>
-                                            </div>
-                                        @endforelse
+                                        @endforeach
                                         <div>
                                             <button class="border rounded-md p-3 bg-gray-100 hover:bg-gray-200 w-full text-center"
                                                     wire:click="createDeduction()">
