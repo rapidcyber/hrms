@@ -67,7 +67,7 @@ class AttendanceTracking extends Component
 
     public function syncBiometricData()
     {
-
+        ini_set('max_execution_time', 600); // 600 seconds
         $zk = new ZktecoLib('192.168.1.142', 4370); // Default port: 4370
         $zk->connect();
         $attendances = $zk->getAttendance();
@@ -119,7 +119,6 @@ class AttendanceTracking extends Component
         //     [59199792016, 43, 1, '2025-06-09 08:24:28'],
         //     // Add more records as needed
         // ];
-
         $punches = collect($attendances)->map(function ($record) {
             return [
                 'bio_id' => $record[0],
