@@ -62,7 +62,7 @@
                     role="tab"
                     aria-label="Employees"
                     aria-selected="true"
-                    @click="tab = 'employees'"
+                    @click="tab = 'employees';$wire.loadEmployees()"
                     :class="tab === 'employees' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'"
                     class="rounded-full border shadow-md px-4 py-2">Employees
                 </button>
