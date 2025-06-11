@@ -117,15 +117,15 @@ class PayrollProcessing extends Component
                 $payroll->employee_id = $employeeId;
                 $payroll->period_start = $this->periodStart;
                 $payroll->period_end = $this->periodEnd;
-                $payroll->gross_salary = $employee->base_salary / 2 + $summary['ot_pay'];
-                // Calculate total deductions
-                if($overtime['status'] == true){
-                    $payroll->overtime_pay = $this->calcuateOvertime($overtime['hours'], $employeeId);
+                if($overtime['status']){
+                    $payroll->overtime_pay = $overtime['hours'] > 0 ? $this->calcuateOvertime($overtime['hours'], $employeeId) : 0;
                 } else {
                     $payroll->overtime_pay = 0;
                 }
+                $payroll->gross_salary = $employee->base_salary / 2 + $payroll->overtime_pay;
+                // Calculate total deductions
 
-                $payroll->total_deductions = $employee->deductions->sum('amount') + $summary['late_pay']+$summary['absents'];
+                $payroll->total_deductions = $employee->deductions->sum('amount') + $summary['late_pay'];
                 $payroll->net_salary = $payroll->gross_salary - $payroll->total_deductions;
                 $payroll->status = 'processed';
                 if($payroll->save()){
@@ -152,7 +152,7 @@ class PayrollProcessing extends Component
 
     public function toggleSelectAllPayroll()
     {
-        $payrolls = Payroll::where('period_start', $this->periodStart)->where('period_end', $this->periodEnd)->get();
+        $payrolls = Payroll::all();
         if ($this->selectAllPayroll) {
             $this->selectedPayrolls = $payrolls->pluck('id')->toArray();
         } else {
@@ -478,7 +478,7 @@ class PayrollProcessing extends Component
                 'isUnicode' => true,
             ]);
             return response()->streamDownload(function () use ($pdf) {
-                $pdf->setPaper('A4', 'portrait')->stream();
+                echo $pdf->setPaper('A4', 'portrait')->stream();
             }, 'payroll_' . $payroll->id . '.pdf');
         } else {
             session()->flash('error', 'Payroll not found.');

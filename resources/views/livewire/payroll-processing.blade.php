@@ -113,11 +113,11 @@
                     id="attendance-table"
                     class="mb-6 min-w-full divide-y divide-gray-200"
                     wire:loading.class="opacity-50"
-                    wire:target="processPayroll, showDeductions, deleteDeduction, editDeduction, deletePayroll, viewPayroll">
+                    wire:target="processPayroll, showDeductions, deleteDeduction, editDeduction, toggleSelectAll, viewPayroll">
                     <x-slot name="head">
                         <x-flux.table.heading>
                             <flux:tooltip content="Select All Employees" placement="top">
-                                <input type="checkbox" wire:model="selectAll" wire:click="toggleSelectAll">
+                                <input type="checkbox" id="select-all-employees" wire:model="selectAll" wire:click="toggleSelectAll">
                             </flux:tooltip>
                         </x-flux.table.heading>
                         <x-flux.table.heading sortable sort-by="first_name" direction="{{$sortDirection}}">Employee</x-flux.table.heading>
@@ -130,7 +130,7 @@
                         @forelse($employees as $employee)
                             <x-flux.table.row :even="$loop->even">
                                 <x-flux.table.cell>
-                                    <input type="checkbox" wire:model.live="selectedEmployees" value="{{ $employee->id }}">
+                                    <input type="checkbox" id="employee-{{ $employee->id }}" wire:model.live="selectedEmployees" value="{{ $employee->id }}">
                                 </x-flux.table.cell>
                                 <x-flux.table.cell class="font-medium text-gray-900">
                                     {{ $employee->first_name }} {{ $employee->last_name }}
@@ -259,10 +259,19 @@
                         Print Payslips
                     </flux:button>
                 </div>
-                <x-flux.table :data="$payrolls">
+                <x-flux.table
+                    :data="$payrolls"
+:striped="true"
+                    :hover="true"
+                    :bordered="false"
+                    responsive
+                    id="attendance-table"
+                    class="mb-6 min-w-full divide-y divide-gray-200"
+                    wire:loading.class="opacity-50"
+                    wire:target="deleteAllPayroll,toggleSelectAllPayroll, deletePayroll, viewPayroll,printPayrolls,downloadPayroll">
                     <x-slot name="head">
                         <x-flux.table.heading>
-                                <input type="checkbox" id="select-all-payroll" wire:model="selectAllPayroll" wire:click="toggleSelectAllPayroll">
+                                <input type="checkbox" id="select-all-payroll" wire:model.live="selectAllPayroll" wire:click="toggleSelectAllPayroll">
                         </x-flux.table.heading>
                         <x-flux.table.heading>Employee</x-flux.table.heading>
                         <x-flux.table.heading>Period</x-flux.table.heading>
@@ -274,7 +283,7 @@
                         @foreach($payrolls as $payroll)
                             <x-flux.table.row :even="$loop->even">
                                 <x-flux.table.cell>
-                                    <input type="checkbox" wire:model.live="selectedPayrolls" value="{{ $payroll->id }}">
+                                    <input type="checkbox" id="payroll-{{ $payroll->id }}" wire:model.live="selectedPayrolls" value="{{ $payroll->id }}">
                                 </x-flux.table.cell>
                                 <x-flux.table.cell>
                                     {{ $payroll->employee->first_name }} {{ $payroll->employee->last_name }}
