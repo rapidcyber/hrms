@@ -49,7 +49,7 @@
                             <x-flux::button wire:click="edit({{ $position->id }})" icon="square-pen" secondary>
                                 {{ __('Edit') }}
                             </x-flux::button>
-                            <x-flux::button wire:click="$set('cofirmDelete', {{ $position->id }})" icon="trash" variant="danger">
+                            <x-flux::button wire:click="$set('confirmDelete', {{ $position->id }})" icon="trash" variant="danger">
                                 {{ __('Delete') }}
                             </x-flux::button>
                         </td>

@@ -149,7 +149,7 @@
                                         size="xs"
                                         variant="outline"
                                         icon="eye"
-                                        {{-- wire:click="showDeductions({{ $employee->id }})" --}}
+                                        wire:click="showDeductions({{ $employee->id }})"
                                         @click="showingDeductions = showingDeductions === {{$employee->id}} ? false : {{$employee->id}}"
                                         @keyup.escape.window="showingDeductions = false"
                                     >

@@ -74,26 +74,22 @@
         </div>
 
         <!-- Add/Edit Role Modal -->
-        @if($showRoleModal)
-        <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div class="bg-white p-6 rounded shadow-lg w-96">
-                <h2 class="text-xl font-bold mb-4">{{ $editRoleMode ? 'Edit Role' : 'Add Role' }}</h2>
-                <form wire:submit.prevent="saveRole">
-                    <div class="mb-4">
-                        <label class="block text-gray-700">Role Name</label>
-                        <input type="text" wire:model.defer="roleData.name" class="w-full border rounded px-3 py-2" required>
-                        @error('roleData.name')
-                            <span class="text-red-500 text-sm">{{ $message }}</span>
-                        @enderror
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="button" wire:click="closeRoleModal" class="mr-2 px-4 py-2 rounded bg-gray-300">Cancel</button>
-                        <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white">{{ $editRoleMode ? 'Update' : 'Add' }}</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        @endif
+        <x-modal wire:show="showRoleModal" title="{{ $editRoleMode ? 'Edit Role' : 'Add Role' }}">
+            <form wire:submit.prevent="saveRole">
+                <div class="mb-4">
+                    <label class="block text-gray-700">Role Name</label>
+                    <input type="text" wire:model.defer="roleData.name" class="w-full border rounded px-3 py-2" required>
+                    @error('roleData.name')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" wire:click="closeRoleModal" class="mr-2 px-4 py-2 rounded bg-gray-300">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white">{{ $editRoleMode ? 'Update' : 'Add' }}</button>
+                </div>
+            </form>
+        </x-modal>
+
 
         <!-- Confirm Delete Role Modal -->
         @if($showConfirmDeleteRole)

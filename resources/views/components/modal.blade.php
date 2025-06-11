@@ -27,6 +27,7 @@
         <div
             x-show="show"
             x-transition
+            @keydown.escape.window="show = false"
             @click.outside="show = false"
             class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full {{ $maxWidthClass }} p-6 relative"
         >
