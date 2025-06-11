@@ -271,8 +271,6 @@ class AttendanceTracking extends Component
         $this->validate([
             'employeeId' => 'required|exists:employees,id',
             'date' => 'required|date|unique:attendances,date,' . $this->attendanceId . ',id,employee_id,' . $this->employeeId,
-            'checkIn' => 'required',
-            'checkOut' => 'required',
             'status' => 'required|string',
             'remarks' => 'nullable|string',
         ]);
@@ -282,7 +280,7 @@ class AttendanceTracking extends Component
         $attendance->employee_id = $this->employeeId;
         $attendance->date = $this->date;
         $attendance->in_1 = $this->checkIn;
-        $attendance->out_1 = $this->checkOut;
+        $attendance->out_1 = !empty($this->checkOut) ? $this->checkOut : null;
         $attendance->in_2 = null; // Assuming no second check-in
         $attendance->out_2 = null; // Assuming no second check-out
         $attendance->in_3 = null; // Assuming no third check-in

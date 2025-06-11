@@ -117,16 +117,19 @@ class PayrollProcessing extends Component
                 $payroll->employee_id = $employeeId;
                 $payroll->period_start = $this->periodStart;
                 $payroll->period_end = $this->periodEnd;
+
+                // Calculate total deductions
                 if($overtime['status']){
-                    $payroll->overtime_pay = $overtime['hours'] > 0 ? $this->calcuateOvertime($overtime['hours'], $employeeId) : 0;
+                    $payroll->overtime_pay = $this->calcuateOvertime($overtime['hours'], $employeeId);
                 } else {
                     $payroll->overtime_pay = 0;
                 }
-                $payroll->gross_salary = $employee->base_salary / 2 + $payroll->overtime_pay;
-                // Calculate total deductions
+                $payroll->gross_salary = ($employee->base_salary / 2) + $payroll->overtime_pay;
 
                 $payroll->total_deductions = $employee->deductions->sum('amount') + $summary['late_pay'];
+
                 $payroll->net_salary = $payroll->gross_salary - $payroll->total_deductions;
+
                 $payroll->status = 'processed';
                 if($payroll->save()){
                     $deductions = $employee->deductions->where('effective_date', $this->periodEnd);
@@ -152,7 +155,7 @@ class PayrollProcessing extends Component
 
     public function toggleSelectAllPayroll()
     {
-        $payrolls = Payroll::all();
+        $payrolls = Payroll::where('period_start', $this->periodStart)->where('period_end', $this->periodEnd)->get();
         if ($this->selectAllPayroll) {
             $this->selectedPayrolls = $payrolls->pluck('id')->toArray();
         } else {
