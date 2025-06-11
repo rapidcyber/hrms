@@ -72,80 +72,62 @@
                 </tbody>
             </table>
         </div>
-
-        <!-- Add/Edit Role Modal -->
-        <x-modal wire:show="showRoleModal" title="{{ $editRoleMode ? 'Edit Role' : 'Add Role' }}">
-            <form wire:submit.prevent="saveRole">
-                <div class="mb-4">
-                    <label class="block text-gray-700">Role Name</label>
-                    <input type="text" wire:model.defer="roleData.name" class="w-full border rounded px-3 py-2" required>
-                    @error('roleData.name')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
-                <div class="flex justify-end">
-                    <button type="button" wire:click="closeRoleModal" class="mr-2 px-4 py-2 rounded bg-gray-300">Cancel</button>
-                    <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white">{{ $editRoleMode ? 'Update' : 'Add' }}</button>
-                </div>
-            </form>
-        </x-modal>
-
-
-        <!-- Confirm Delete Role Modal -->
-        @if($showConfirmDeleteRole)
-        <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div class="bg-white p-6 rounded shadow-lg w-96">
-                <h2 class="text-xl font-bold mb-4">Confirm Delete</h2>
-                <p>Are you sure you want to delete this role?</p>
-                <div class="flex justify-end mt-4">
-                    <button wire:click="closeConfirmDeleteRole" class="mr-2 px-4 py-2 rounded bg-gray-300">Cancel</button>
-                    <button wire:click="confirmDeleteRole" class="px-4 py-2 rounded bg-red-600 text-white">Delete</button>
-                </div>
-            </div>
-        </div>
-        @endif
     </div>
 
+    <!-- Add/Edit Role Modal -->
+    <x-modal wire:show="showRoleModal" title="{{ $editRoleMode ? 'Edit Role' : 'Add Role' }}">
+        <form wire:submit.prevent="saveRole">
+            <div class="mb-4">
+                <label class="block text-gray-700">Role Name</label>
+                <input type="text" wire:model.defer="roleData.name" class="w-full border rounded px-3 py-2" required>
+                @error('roleData.name')
+                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                @enderror
+            </div>
+            <div class="flex justify-end">
+                <button type="button" wire:click="closeRoleModal" class="mr-2 px-4 py-2 rounded bg-gray-300">Cancel</button>
+                <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white">{{ $editRoleMode ? 'Update' : 'Add' }}</button>
+            </div>
+        </form>
+    </x-modal>
+    <!-- Confirm Delete Role Modal -->
+    <x-modal wire:show="showConfirmDeleteRole" title="Confirm Delete Role">
+        <p>Are you sure you want to delete this role?</p>
+        <div class="flex justify-end mt-4">
+            <button wire:click="closeConfirmDeleteRole" class="mr-2 px-4 py-2 rounded bg-gray-300">Cancel</button>
+            <button wire:click="confirmDeleteRole" class="px-4 py-2 rounded bg-red-600 text-white">Delete</button>
+        </div>
+    </x-modal>
     <!-- Add/Edit User Modal -->
-    @if($showUserModal)
-    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-        <div class="bg-white p-6 rounded shadow-lg w-96">
-            <h2 class="text-xl font-bold mb-4">{{ $editMode ? 'Edit User' : 'Add User' }}</h2>
-            <form wire:submit.prevent="{{ $editMode ? 'updateUser' : 'saveUser' }}">
-                <div class="mb-4">
-                    <label class="block text-gray-700">Name</label>
-                    <input type="text" wire:model.defer="userData.name" class="w-full border rounded px-3 py-2" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700">Email</label>
-                    <input type="email" wire:model.defer="userData.email" class="w-full border rounded px-3 py-2" required>
-                </div>
-                @if(!$editMode)
-                <div class="mb-4">
-                    <label class="block text-gray-700">Password</label>
-                    <input type="password" wire:model.defer="userData.password" class="w-full border rounded px-3 py-2" required>
-                </div>
-                @endif
-                <div class="flex justify-end">
-                    <button type="button" wire:click="closeUserModal" class="mr-2 px-4 py-2 rounded bg-gray-300">Cancel</button>
-                    <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white">{{ $editMode ? 'Update' : 'Add' }}</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    @endif
-
-    <!-- Confirm Delete Modal -->
-    @if($showConfirmDelete)
-    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-        <div class="bg-white p-6 rounded shadow-lg w-96">
-            <h2 class="text-xl font-bold mb-4">Confirm Delete</h2>
-            <p>Are you sure you want to delete this user?</p>
-            <div class="flex justify-end mt-4">
-                <button wire:click="closeConfirmDelete" class="mr-2 px-4 py-2 rounded bg-gray-300">Cancel</button>
-                <button wire:click="confirmDelete" class="px-4 py-2 rounded bg-red-600 text-white">Delete</button>
+    <x-modal wire:show="showUserModal" title="{{ $editMode ? 'Edit User' : 'Add User' }}">
+        <form wire:submit.prevent="{{ $editMode ? 'updateUser' : 'saveUser' }}">
+            <div class="mb-4">
+                <label class="block text-gray-700">Name</label>
+                <input type="text" wire:model.defer="userData.name" class="w-full border rounded px-3 py-2" required>
             </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Email</label>
+                <input type="email" wire:model.defer="userData.email" class="w-full border rounded px-3 py-2" required>
+            </div>
+            @if(!$editMode)
+            <div class="mb-4">
+                <label class="block text-gray-700">Password</label>
+                <input type="password" wire:model.defer="userData.password" class="w-full border rounded px-3 py-2" required>
+            </div>
+            @endif
+            <div class="flex justify-end">
+                <button type="button" wire:click="closeUserModal" class="mr-2 px-4 py-2 rounded bg-gray-300">Cancel</button>
+                <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white">{{ $editMode ? 'Update' : 'Add' }}</button>
+            </div>
+        </form>
+    </x-modal>
+
+    <!-- Confirm Delete User Modal -->
+    <x-modal wire:show="showConfirmDelete" title="Confirm Delete User">
+        <p>Are you sure you want to delete this user?</p>
+        <div class="flex justify-end mt-4">
+            <button wire:click="closeConfirmDelete" class="mr-2 px-4 py-2 rounded bg-gray-300">Cancel</button>
+            <button wire:click="confirmDelete" class="px-4 py-2 rounded bg-red-600 text-white">Delete</button>
         </div>
-    </div>
-    @endif
+    </x-modal>
 </div>

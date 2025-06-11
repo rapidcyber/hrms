@@ -64,8 +64,12 @@ class UserManagement extends Component
             ]);
             $this->editingUser->update($this->userData);
             $this->refreshUsers();
+            log_activity('update_user', 'Updated user details', $this->editingUser);
             $this->editingUser = null;
             $this->userData = [];
+            $this->editMode = false;
+            session()->flash('message', 'User updated successfully.');
+            $this->closeUserModal();
         }
     }
 
@@ -168,7 +172,9 @@ class UserManagement extends Component
     }
     public function showEditUserModal($userId)
     {
-        $this->editRoleMode = true;
+        $this->editMode = true;
+        $this->editingUser = User::findOrFail($userId);
+        $this->userData = $this->editingUser->toArray();
         $this->showUserModal = true;
     }
     public function showEditRoleModal($roleId)
