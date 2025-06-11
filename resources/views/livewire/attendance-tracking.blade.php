@@ -4,7 +4,7 @@
             <h1 class="text-2xl font-bold">Attendance Tracking</h1>
             <div class="flex gap-2">
                 <div>
-                    <input wire:model.live="search" type="text" placeholder="Search employees..." class="px-4 py-2 bg-white border rounded-md">
+                    <input wire:model.live="search" type="search" placeholder="Search employees..." class="px-4 py-2 bg-white border rounded-md">
                     <button wire:click="create" @click="$refresh()" class="ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                         Add Attendance
                     </button>
@@ -164,6 +164,7 @@
                         <option value="late">Late</option>
                         <option value="half-day">Half-day</option>
                         <option value="absent">Absent</option>
+                        <option value="rest-day">Rest Day</option>
                     </select>
                     {{-- <input wire:model="status" type="text" id="status"
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"> --}}

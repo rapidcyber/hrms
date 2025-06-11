@@ -54,7 +54,8 @@ class AttendanceTracking extends Component
             ->where(function($query) {
             $query->where('employees.first_name', 'like', '%'. $this->search.'%')
                   ->orWhere('employees.last_name', 'like', '%'. $this->search.'%')
-                  ->orWhere('employees.employee_id', 'like', '%' .$this->search.'%');
+                  ->orWhere('employees.employee_id', 'like', '%' .$this->search.'%')
+                  ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$this->search}%"]);
             })
             ->whereBetween('attendances.date', [$this->periodStart, $this->periodEnd])
             ->orderBy($this->sortField, is_array($this->sortDirection) ? ($this->sortDirection[$this->sortField] ?? 'desc') : $this->sortDirection)
@@ -79,7 +80,7 @@ class AttendanceTracking extends Component
         // $attendances = [];
         // $employeeIds = [12, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43];
         // $bioIdBase = 65000000000;
-        // $startDate = Carbon::now()->subMonths(2)->startOfMonth();
+        // $startDate = Carbon::now()->subMonths(1)->startOfMonth();
         // $endDate = Carbon::now()->endOfMonth();
 
         // foreach ($employeeIds as $i => $employeeId) {
@@ -160,36 +161,22 @@ class AttendanceTracking extends Component
                     $status = 'present';
                     $checkIn = $attendance->in_1 ?? $attendance->in_2 ?? $attendance->in_3;
                     $checkOut = $attendance->out_3 ?? $attendance->out_2 ?? $attendance->out_1;
-                    if ($checkIn && Carbon::parse($checkIn)->gt(Carbon::parse($shift->time_in))) {
+                    $date = $attendance->date;
+                    if ($checkIn && Carbon::parse($checkIn)->subMinutes(10)->gt(Carbon::parse($date . ' ' . $shift->time_in))) {
                         $status = 'late';
                     }
 
                     if (is_null($checkIn)) {
                         $status = 'absent';
                     }
-                    $restDays = [
-                        0 => 'Sunday',
-                        1 => null,
-                        2 => null,
-                        3 => null,
-                        4 => null,
-                        5 => null,
-                        6 => 'Saturday'
-                    ];
+                    $restDays = $employee->rest_days ?? null;
+                    if($employee->rest_days){
+                        $restDays = json_decode($employee->rest_days, true);
+                    }
                     if (in_array(Carbon::parse($attendance->date)->dayOfWeek(), array_keys(array_filter($restDays)))) {
                         $status = 'rest-day';
                     }
-                    if ($employee->shift_id === 3) {
-                        $restDays = [
-                            0 => null,
-                            1 => null,
-                            2 => null,
-                            3 => null,
-                            4 => null,
-                            5 => null,
-                            6 => 'Saturday'
-                        ];
-                    }
+
                     $attendance->status = $status;
                     $attendance->source = 'biometric';
                     // Set hours based on shift
@@ -303,8 +290,15 @@ class AttendanceTracking extends Component
         $attendance->status = $this->status;
         $attendance->remarks = $this->remarks;
         $attendance->hours_worked = 0; // Default to 0, will be calculated later
+        $hours = Carbon::parse($this->checkIn)->diffInMinutes(Carbon::parse($this->checkOut)) / 60;
 
-        $attendance->hours_worked = Carbon::parse($this->checkIn)->diffInMinutes(Carbon::parse($this->checkOut)) / 60;
+        if ($hours > 0 && $hours < 5) {
+            $this->status = 'half-day'; // Set status to half-day if hours worked is less than 5
+        }
+        if ($this->status === 'present' || $this->status === 'late') {
+            $hours = $hours - 1; // Deduct 1 hour for present or late status
+        }
+        $attendance->hours_worked = $hours;
 
         if ($attendance->hours_worked < 0) {
             $attendance->hours_worked = 0; // Prevent negative hours

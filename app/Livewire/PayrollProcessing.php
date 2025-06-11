@@ -14,6 +14,7 @@ class PayrollProcessing extends Component
 {
     public $periodStart;
     public $periodEnd;
+    public $employees = [];
     public $search = '', $sortField = 'first_name', $sortDirection = 'asc';
     public $selectedEmployees = [];
     public $selectedPayrolls = [];
@@ -21,6 +22,11 @@ class PayrollProcessing extends Component
     public $selectAllPayroll = false;
     public $showingDeductions = null;
     public $showDeductionModal = false;
+    public $overtimes = [0 => [
+        'employee_id' => 0,
+        'hours' => 0,
+        'status' => false,
+    ]];
     public $editingDeduction = false;
     public $recentPayrolls = [];
     public $confirmDelete = false;
@@ -42,7 +48,7 @@ class PayrollProcessing extends Component
     public $confirmDeleteAll = false;
 
     protected $listeners = [
-        'loadEmployees' => '$refresh',
+        'loadEmployees' => 'loadEmployees',
     ];
 
     public function mount()
@@ -50,9 +56,45 @@ class PayrollProcessing extends Component
         // $this->employees = collect();
         $this->periodStart = Carbon::now()->subMonth()->startOfMonth()->format('Y-m-d');
         $this->periodEnd = Carbon::now()->endOfMonth()->format('Y-m-d');
+        $this->loadEmployees();
     }
 
+    public function loadEmployees()
+    {
+        $this->validate([
+            'periodStart' => 'required|date',
+            'periodEnd' => 'required|date|after_or_equal:periodStart',
+        ]);
+        $this->selectedEmployees = [];
+        $this->selectedPayrolls = [];
 
+        $cutoffStart = Carbon::parse($this->periodStart)->format('Y-m-d');
+        $cutoffEnd = Carbon::parse($this->periodEnd)->format('Y-m-d');
+
+        $employees = Employee::whereHas('attendances', function($query) use($cutoffEnd,$cutoffStart) {
+            // $query->whereNotNull('in_1');
+                $query->whereBetween('attendances.date', [$cutoffStart, $cutoffEnd]);
+            })->where(function($q){
+                $q->where('first_name', 'like', '%'. $this->search.'%')
+                ->orWhere('last_name', 'like', '%'. $this->search.'%')
+                ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$this->search}%"])
+                ->orWhere('employee_id', 'like', '%' .$this->search.'%');
+            })
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->get();
+
+        foreach ($employees as $employee) {
+            $summary = $this->calculateOTLates($employee->id);
+            $this->overtimes[$employee->id] = [
+                'employee_id' => $employee->id,
+                'hours' => number_format($summary['overtime'] ?? 0, 2),
+                'status' => false,
+            ];
+            $employee->overtime_hours = $this->overtimes[$employee->id]['hours'];
+            $employee->overtime_status = $this->overtimes[$employee->id]['status'];
+        }
+        $this->employees = $employees;
+    }
 
     public function processPayroll()
     {
@@ -61,12 +103,13 @@ class PayrollProcessing extends Component
         $cutoffEnd = Carbon::parse($this->periodEnd)->format('Y-m-d H:i:s');
 
         foreach ($this->selectedEmployees as $employeeId) {
-
             $hours_worked =  Attendance::where('employee_id', $employeeId)
                 ->whereBetween('date',[$cutoffStart, $cutoffEnd])
                 ->sum('hours_worked');
 
             if(!empty($hours_worked)){
+
+                $overtime = $this->overtimes[$employeeId];
 
                 $employee = Employee::find($employeeId);
                 $summary = $this->calculateOTLates($employeeId);
@@ -76,7 +119,12 @@ class PayrollProcessing extends Component
                 $payroll->period_end = $this->periodEnd;
                 $payroll->gross_salary = $employee->base_salary / 2 + $summary['ot_pay'];
                 // Calculate total deductions
-                $payroll->overtime_pay = $summary['ot_pay'];
+                if($overtime['status'] == true){
+                    $payroll->overtime_pay = $this->calcuateOvertime($overtime['hours'], $employeeId);
+                } else {
+                    $payroll->overtime_pay = 0;
+                }
+
                 $payroll->total_deductions = $employee->deductions->sum('amount') + $summary['late_pay']+$summary['absents'];
                 $payroll->net_salary = $payroll->gross_salary - $payroll->total_deductions;
                 $payroll->status = 'processed';
@@ -132,6 +180,51 @@ class PayrollProcessing extends Component
         $this->showingDeductions = $this->showingDeductions === $employeeId ? null : $employeeId;
 
         $this->summary = $this->calculateOTLates($employeeId);
+
+    }
+
+    public function approveOvertime($employeeId)
+    {
+        $this->overtimes[$employeeId]['status'] = !$this->overtimes[$employeeId]['status'];
+
+    }
+
+    private function calcuateOvertime($hours, $employeeId)
+    {
+        $startOfMonth = Carbon::parse($this->periodStart)->startOfMonth();
+        $endOfMonth = Carbon::parse($this->periodStart)->endOfMonth();
+
+        $daysInMonth = 0;
+        $period = $startOfMonth->toPeriod($endOfMonth);
+
+        $employee = Employee::find($employeeId);
+
+        $rds = array_filter(json_decode($employee->rest_days));
+        $restDays = array_keys($rds);
+        foreach ($period as $date) {
+            if (!in_array($date->dayOfWeek, $restDays)) {
+                $daysInMonth++;
+            }
+        }
+
+        $dailyRate = $employee->base_salary / $daysInMonth;
+
+        if ($employee->shift && $employee->shift->time_in && $employee->shift->time_out) {
+            $timeIn = Carbon::parse($employee->shift->time_in);
+            $timeOut = Carbon::parse($employee->shift->time_out);
+
+            // Handle overnight shifts
+            if ($timeOut->lessThanOrEqualTo($timeIn)) {
+                $timeOut->addDay();
+            }
+
+            $shiftHours = $timeIn->diffInHours($timeOut) - 1; // -1 for lunch break
+        } else {
+            $shiftHours = 8; // fallback to 8 if not set
+        }
+
+        $hourlyRate = $dailyRate / $shiftHours;
+        return $hourlyRate * $hours;
     }
 
     private function calculateOTLates($employeeId){
@@ -198,19 +291,42 @@ class PayrollProcessing extends Component
             // Calculate Lates if not rest days
             if(!in_array(Carbon::parse($attendance->date)->dayOfWeek(), $restDays)){
                 $checkIn = $attendance->in_1 ?? $attendance->in_2 ?? $attendance->in_3 ?? null;
+                $checkOut = $attendance->out_3 ?? $attendance->out_2 ?? $attendance->out_1 ?? null;
                 $scheduled_in = $attendance->date . ' ' . $attendance->employee->shift->time_in;
 
                 if (!empty($scheduled_in) && !empty($checkIn)) {
                     $scheduledIn = Carbon::parse($scheduled_in);
+                    $scheduledOut = Carbon::parse($attendance->date . ' ' . $attendance->employee->shift->time_out);
                     $actualIn = Carbon::parse($checkIn);
+                    $actualOut = Carbon::parse($checkOut);
                     if ($actualIn->subMinutes(10)->gt($scheduledIn)) {
                         $summary['lates'] += $scheduledIn->diffInMinutes($actualIn) / 60;
                         $summary['late_pay'] = $summary['lates'] * $hourlyRate;
                     }
 
                     if(($attendance->hours_worked - 1) > $shiftHours ){
-                        $summary['overtime'] += $attendance->hours_worked - $shiftHours;
-                        $summary['ot_pay'] += $summary['overtime'] * $hourlyRate;
+                        // Calculate Early In and overtime
+                        // Early In: If employee checks in earlier than scheduled, count as overtime
+                        $overtimeHours = 0;
+                        if ($actualIn->lt($scheduledIn)) {
+                            $earlyInHours = $actualIn->diffInMinutes($scheduledIn) / 60;
+
+                            if($earlyInHours > 1){
+                                $overtimeHours = $overtimeHours + $earlyInHours;
+                            }
+
+                        }
+                        if ($actualOut->gt($scheduledOut)) {
+                            $lateOutHours = $scheduledOut->diffInMinutes($actualOut) / 60;
+                            if($lateOutHours > 1){
+                                $overtimeHours = $overtimeHours + $lateOutHours;
+                            }
+                        }
+
+                        if($overtimeHours > 1){
+                            $summary['overtime'] += $overtimeHours;
+                            $summary['ot_pay'] += $overtimeHours * $hourlyRate;
+                        }
                     }
                 }
                 //absents
@@ -309,25 +425,6 @@ class PayrollProcessing extends Component
     public function render()
     {
 
-        $cutoffStart = Carbon::parse($this->periodStart)->format('Y-m-d');
-        $cutoffEnd = Carbon::parse($this->periodEnd)->format('Y-m-d');
-
-        $employees = Employee::whereHas('attendances', function($query) use($cutoffEnd,$cutoffStart) {
-            // $query->whereNotNull('in_1');
-                $query->whereBetween('attendances.date', [$cutoffStart, $cutoffEnd]);
-            })->where(function($q){
-                $q->where('first_name', 'like', '%'. $this->search.'%')
-                ->orWhere('last_name', 'like', '%'. $this->search.'%')
-                ->orWhere('employee_id', 'like', '%' .$this->search.'%');
-            })
-            ->orderBy($this->sortField, $this->sortDirection)
-            ->get();
-
-        // dd($weekMap[now()->dayOfWeek()]);
-
-        // if($this->employees->isEmpty()) {
-        //     $this->loadEmployees();
-        // }
         if(empty($this->recentPayrolls)) {
             $this->recentPayrolls = Payroll::orderBy('created_at', 'desc')->take(5)->get();
         }
@@ -340,7 +437,7 @@ class PayrollProcessing extends Component
             ->whereBetween('period_start', [$this->periodStart, $this->periodEnd])
             ->get();
 
-        return view('livewire.payroll-processing', compact('employees','payrolls'));
+        return view('livewire.payroll-processing', compact('payrolls'));
     }
     // Preview Payrool
     public function viewPayroll($id){

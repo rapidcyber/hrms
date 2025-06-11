@@ -45,6 +45,7 @@ class EmployeeManagement extends Component
             ->join('positions', 'employees.department_id', '=', 'positions.id')
             ->where('first_name', 'like', '%'.$this->search.'%')
             ->orWhere('last_name', 'like', '%'.$this->search.'%')
+            ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$this->search}%"])
             ->orWhere('employee_id', 'like', '%'.$this->search.'%')
             ->select('employees.*')
             ->orderBy($this->sortField, $this->sortDirection)
