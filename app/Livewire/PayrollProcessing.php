@@ -139,6 +139,8 @@ class PayrollProcessing extends Component
                 $payroll->net_salary = $payroll->gross_salary - $payroll->total_deductions;
                 // dd($payroll->net_salary);
                 $payroll->status = 'processed';
+
+                // dd(($employee->base_salary / 2), $payroll->overtime_pay, $summary['sunday_overtime'],$employee->deductions->sum('amount'), $summary['late_pay'], $summary['undertime_pay'], $absentPay);
                 if($payroll->save()){
                     $deductions = $employee->deductions->where('effective_date', '>=', $this->periodStart);
 

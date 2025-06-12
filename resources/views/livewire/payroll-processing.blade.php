@@ -485,7 +485,7 @@
                 </tr>
                 <tr>
                     <td>Under Time:</td>
-                    <td style="color:red">&#8369; 0.00</td>
+                    <td style="color:red">&#8369; {{ number_format($viewingPayroll->undertime_pay, 2) }}</td>
                 </tr>
                 @forelse ($viewingPayroll->deductions as $deduction)
                 <tr>
