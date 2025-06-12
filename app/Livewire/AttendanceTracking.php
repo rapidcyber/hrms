@@ -42,14 +42,11 @@ class AttendanceTracking extends Component
 
     protected $listeners = ['fileSelected'];
 
-    public function mount ()
-    {
-        $this->periodStart = now()->subMonth()->firstOfMonth()->format('Y-m-d');
-        $this->periodEnd = now()->endOfMonth()->format('Y-m-d');
-    }
-
     public function render()
     {
+        if (empty($this->periodStart) || empty($this->periodEnd)) {
+            return view('livewire.attendance-tracking', ['attendances' => collect(), 'employees'=> Employee::latest()->get()]);
+        }
         $attendances = Attendance::join('employees', 'attendances.employee_id', '=', 'employees.id')
             ->where(function($query) {
             $query->where('employees.first_name', 'like', '%'. $this->search.'%')
@@ -69,6 +66,12 @@ class AttendanceTracking extends Component
 
     public function syncBiometricData()
     {
+
+        $this->validate([
+            'periodStart' => 'required|date',
+            'periodEnd' => 'required|date|after_or_equal:periodStart',
+        ]);
+
         ini_set('max_execution_time', 600); // 600 seconds
         $zk = new ZktecoLib('192.168.1.142', 4370); // Default port: 4370
         $zk->connect();

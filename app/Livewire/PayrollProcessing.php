@@ -9,6 +9,8 @@ use App\Models\Employee;
 use App\Models\Payroll;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf; // Import the facade
+use App\Exports\PayrollExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PayrollProcessing extends Component
 {
@@ -54,17 +56,11 @@ class PayrollProcessing extends Component
     public function mount()
     {
         // $this->employees = collect();
-        $this->periodStart = Carbon::now()->subMonth()->startOfMonth()->format('Y-m-d');
-        $this->periodEnd = Carbon::now()->endOfMonth()->format('Y-m-d');
         $this->loadEmployees();
     }
 
     public function loadEmployees()
     {
-        $this->validate([
-            'periodStart' => 'required|date',
-            'periodEnd' => 'required|date|after_or_equal:periodStart',
-        ]);
         $this->selectedEmployees = [];
         $this->selectedPayrolls = [];
 
@@ -98,11 +94,23 @@ class PayrollProcessing extends Component
 
     public function processPayroll()
     {
+        $this->validate([
+            'periodStart' => 'required|date',
+            'periodEnd' => 'required|date|after_or_equal:periodStart',
+        ]);
 
         $cutoffStart = Carbon::parse($this->periodStart)->format('Y-m-d H:i:s');
         $cutoffEnd = Carbon::parse($this->periodEnd)->format('Y-m-d H:i:s');
 
         foreach ($this->selectedEmployees as $employeeId) {
+
+            $absents = $this->getAbsents($employeeId);
+            $absentPay = 0;
+            if($absents > 0){
+                $absentPay = $absents * $this->calculateDailyRate($employeeId);
+            }
+
+
             $hours_worked =  Attendance::where('employee_id', $employeeId)
                 ->whereBetween('date',[$cutoffStart, $cutoffEnd])
                 ->sum('hours_worked');
@@ -120,19 +128,20 @@ class PayrollProcessing extends Component
 
                 // Calculate total deductions
                 if($overtime['status']){
-                    $payroll->overtime_pay = $this->calcuateOvertime($overtime['hours'], $employeeId);
+                    $payroll->overtime_pay = $this->calculateOvertime($overtime['hours'], $employeeId);
                 } else {
                     $payroll->overtime_pay = 0;
                 }
-                $payroll->gross_salary = ($employee->base_salary / 2) + $payroll->overtime_pay;
+                $payroll->gross_salary = ($employee->base_salary / 2) + $payroll->overtime_pay + $summary['sunday_overtime'];
 
-                $payroll->total_deductions = $employee->deductions->sum('amount') + $summary['late_pay'];
+                $payroll->total_deductions = $employee->deductions->sum('amount') + $summary['late_pay'] + $summary['undertime_pay'] + $absentPay;
 
                 $payroll->net_salary = $payroll->gross_salary - $payroll->total_deductions;
-
+                // dd($payroll->net_salary);
                 $payroll->status = 'processed';
                 if($payroll->save()){
-                    $deductions = $employee->deductions->where('effective_date', $this->periodEnd);
+                    $deductions = $employee->deductions->where('effective_date', '>=', $this->periodStart);
+
                     $payroll->deductions()->attach($deductions->pluck('id')->toArray());
 
                     log_activity('Payroll processed for employee ID: ' . $employee->employee_id);
@@ -192,7 +201,7 @@ class PayrollProcessing extends Component
 
     }
 
-    private function calcuateOvertime($hours, $employeeId)
+    private function calculateOvertime($hours, $employeeId)
     {
         $startOfMonth = Carbon::parse($this->periodStart)->startOfMonth();
         $endOfMonth = Carbon::parse($this->periodStart)->endOfMonth();
@@ -239,14 +248,14 @@ class PayrollProcessing extends Component
 
         $employee = Employee::find($employeeId);
 
-        $rds = array_filter(json_decode($employee->rest_days));
-        $restDays = array_keys($rds);
+        $rest_days = array_filter(json_decode($employee->rest_days));
+        $restDays = array_keys($rest_days);
         foreach ($period as $date) {
             if (!in_array($date->dayOfWeek, $restDays)) {
                 $daysInMonth++;
             }
         }
-
+        // Compute daily and hourly rate
         $dailyRate = $employee->base_salary / $daysInMonth;
 
         if ($employee->shift && $employee->shift->time_in && $employee->shift->time_out) {
@@ -280,6 +289,11 @@ class PayrollProcessing extends Component
             'lates' => 0,
             'late_pay' => 0,
             'absents' => 0,
+            'undertime' => 0,
+            'undertime_pay' => 0,
+            'sunday_overtime' => 0,
+            'hours_worked' => $attendances->sum('hours_worked'),
+            'employee_id' => $employeeId,
         ];
 
         // Calculate Overtime and lates
@@ -289,6 +303,11 @@ class PayrollProcessing extends Component
                 if(!empty($attendance->hours_worked)){
                     $summary['overtime'] += $attendance->hours_worked;
                 }
+            }
+
+            if(!empty($restDays) && Carbon::parse($attendance->date)->dayOfWeek() === 0) {
+                $summary['overtime'] -= $attendance->hours_worked;
+                $summary['sunday_overtime'] += $hourlyRate * $attendance->hours_worked;
             }
 
             // Calculate Lates if not rest days
@@ -306,6 +325,12 @@ class PayrollProcessing extends Component
                         $summary['lates'] += $scheduledIn->diffInMinutes($actualIn) / 60;
                         $summary['late_pay'] = $summary['lates'] * $hourlyRate;
                     }
+                    // Check if actual out is later than scheduled out
+                    if ($actualOut->lt($scheduledOut)) {
+                        $lateHours = $actualOut->diffInMinutes($scheduledOut) / 60;
+                        $summary['undertime'] += $lateHours;
+                        $summary['undertime_pay'] += $lateHours * $hourlyRate;
+                    }
 
                     if(($attendance->hours_worked - 1) > $shiftHours ){
                         // Calculate Early In and overtime
@@ -314,7 +339,7 @@ class PayrollProcessing extends Component
                         if ($actualIn->lt($scheduledIn)) {
                             $earlyInHours = $actualIn->diffInMinutes($scheduledIn) / 60;
 
-                            if($earlyInHours > 1){
+                            if($earlyInHours > 2 ){
                                 $overtimeHours = $overtimeHours + $earlyInHours;
                             }
 
@@ -332,10 +357,6 @@ class PayrollProcessing extends Component
                         }
                     }
                 }
-                //absents
-                if($attendance->status == 'absent'){
-                    $summary['absents'] += $dailyRate;
-                }
             }
         }
 
@@ -344,6 +365,11 @@ class PayrollProcessing extends Component
 
     public function createDeduction()
     {
+        $this->validate([
+            'periodStart' => 'required|date',
+            'periodEnd' => 'required|date|after_or_equal:periodStart',
+        ]);
+
         $this->resetDeductionForm();
         $this->editingDeduction = false;
         $this->showDeductionModal = true;
@@ -375,8 +401,8 @@ class PayrollProcessing extends Component
     public function saveDeduction()
     {
         $this->validate([
-            'deduction_amount' => 'required',
-            'deduction_type' => 'required',
+            'periodStart' => 'required|date',
+            'periodEnd' => 'required|date|after_or_equal:periodStart',
         ]);
 
         $deduction = Deduction::find($this->deductionId) ?? new Deduction;
@@ -402,11 +428,11 @@ class PayrollProcessing extends Component
 
     public function resetDeductionForm()
     {
-        $this->deduction = [
-            'deduction_amount' => '',
-            'deduction_type' => '',
-            'amount' => 0,
-        ];
+
+        $this->deduction_amount = '';
+        $this->deduction_type = '';
+        $this->deduction_amount = 0;
+
     }
 
     public function deleteDeduction($id){
@@ -450,7 +476,12 @@ class PayrollProcessing extends Component
         $summary = $this->calculateOTLates($payroll->employee_id);
 
         $payroll->lates = $summary['late_pay'];
-        $payroll->absents = $summary['absents'];
+
+        $payroll->absents = $this->getAbsents($payroll->employee_id, [$payroll->period_start, $payroll->period_end]) * $this->calculateDailyRate($payroll->employee_id);
+        $payroll->undertime_pay = $summary['undertime_pay'];
+        $payroll->sunday_overtime = $summary['sunday_overtime'];
+
+
 
         $this->viewingPayroll = $payroll;
 
@@ -472,7 +503,9 @@ class PayrollProcessing extends Component
         $summary = $this->calculateOTLates($payroll->employee_id);
 
         $payroll->lates = $summary['late_pay'];
-        $payroll->absents = $summary['absents'];
+        $payroll->absents = $this->getAbsents($payroll->employee_id, [$payroll->period_start, $payroll->period_end]) * $this->calculateDailyRate($payroll->employee_id);
+        $payroll->undertime_pay = $summary['undertime_pay'];
+        $payroll->sunday_overtime = $summary['sunday_overtime'];
 
         if ($payroll) {
             $pdf = Pdf::loadView('payroll.payslip', ['payroll' => $payroll],[
@@ -496,11 +529,26 @@ class PayrollProcessing extends Component
 
         $payrolls = Payroll::where('period_start', $start)->where('period_end', $end)->get();
 
+        $payrolls->each(function($payroll) {
+            $summary = $this->calculateOTLates($payroll->employee_id);
+            $payroll->lates = $summary['late_pay'];
+            $payroll->absents = $this->getAbsents($payroll->employee_id, [$payroll->period_start, $payroll->period_end]) * $this->calculateDailyRate($payroll->employee_id);
+            $payroll->undertime_pay = $summary['undertime_pay'];
+            $payroll->sunday_overtime = $summary['sunday_overtime'];
+        });
         $pdf = Pdf::loadView('payroll.payrolls', ['payrolls' => $payrolls]);
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->stream();
         }, 'payrolls_' . $start . '_' . $end . '.pdf');
 
+    }
+    // Export Payrolls
+    public function exportPayrolls()
+    {
+        $start = $this->periodStart;
+        $end = $this->periodEnd;
+
+        return Excel::download(new PayrollExport(['period_start' => $start, 'period_end' => $end]), 'payrolls_' . now()->format('Y-m-d') . '.xlsx');
     }
 
     public function deletePayroll($id){
@@ -513,5 +561,57 @@ class PayrollProcessing extends Component
         } else {
             session()->flash('error', 'Payroll not found.');
         }
+    }
+
+    private function getAbsents($employeeId, $cutoff = [])
+    {
+        $cutoffStart = Carbon::parse($this->periodStart)->startOfDay();
+        $cutoffEnd = Carbon::parse($this->periodEnd)->endOfDay();
+
+        if(!empty($cutoff)){
+            $cutoffStart = Carbon::parse($cutoff[0])->startOfDay();
+            $cutoffEnd = Carbon::parse($cutoff[1])->endOfDay();
+        }
+
+        $attendance = Attendance::where('employee_id', $employeeId)
+            ->whereBetween('date', [$cutoffStart->toDateString(), $cutoffEnd->toDateString()] )->get();
+
+        $allDates = [];
+        $currentDate = $cutoffStart->copy();
+        while ($currentDate->lte($cutoffEnd)) {
+            // Only add if not Saturday (6) or Sunday (0)
+            if (!in_array($currentDate->dayOfWeek, [6, 0])) {
+                $allDates[] = $currentDate->toDateString();
+            }
+            $currentDate->addDay();
+        }
+        $presentDates = $attendance->pluck('date')->toArray();
+        $absentDays = array_diff($allDates, $presentDates);
+        $absentCount = count($absentDays);
+        return $absentCount;
+    }
+
+    private function calculateDailyRate($employeeId)
+    {
+        $employee = Employee::find($employeeId);
+        $startOfMonth = Carbon::parse($this->periodStart)->startOfMonth();
+        $endOfMonth = Carbon::parse($this->periodStart)->endOfMonth();
+
+        $daysInMonth = 0;
+        $period = $startOfMonth->toPeriod($endOfMonth);
+
+        $rest_days = array_filter(json_decode($employee->rest_days));
+        $restDays = array_keys($rest_days);
+        foreach ($period as $date) {
+            if (!in_array($date->dayOfWeek, $restDays)) {
+                $daysInMonth++;
+            }
+        }
+        // Compute daily rate
+        if ($daysInMonth === 0) {
+            return 0; // Avoid division by zero
+        }
+
+        return $employee->base_salary / $daysInMonth;
     }
 }

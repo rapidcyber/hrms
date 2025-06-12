@@ -84,7 +84,7 @@
             </tr>
             <tr>
                 <td>Sunday Overtime</td>
-                <td style="font-weight: bold;color:#3F507F">&#8369; 0.00</td>
+                <td style="font-weight: bold;color:#3F507F">&#8369; {{ number_format($payroll->sunday_overtime, 2) }}</td>
             </tr>
             <tr>
                 <td>Lates</td>
@@ -92,7 +92,7 @@
             </tr>
             <tr>
                 <td>Under Time:</td>
-                <td style="color:red">&#8369; 0.00</td>
+                <td style="color:red">&#8369; {{ number_format($payroll->undertime_pay, 2) }}</td>
             </tr>
             @forelse ($payroll->employee->deductions as $deduction)
             <tr>

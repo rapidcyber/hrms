@@ -61,7 +61,7 @@
                 <td>Name:</td>
                 <td style="color:#fff;background-color:#3F507F">
                     @php($first = explode(' ', $payroll->employee->first_name))
-                    {{count($first) ? $first[1] : $payroll->employee->first_name}} {{$payroll->employee->last_name}}
+                    {{$payroll->employee->first_name}} {{$payroll->employee->last_name}}
                 </td>
             </tr>
             <tr>
@@ -74,7 +74,7 @@
             </tr>
             <tr>
                 <td>Sunday Overtime</td>
-                <td style="font-weight: bold;color:#3F507F">&#8369; 0.00</td>
+                <td style="font-weight: bold;color:#3F507F">&#8369; {{ number_format($payroll->sunday_overtime, 2) }}</td>
             </tr>
             <tr>
                 <td>Lates</td>
@@ -82,7 +82,7 @@
             </tr>
             <tr>
                 <td>Under Time:</td>
-                <td style="color:red">&#8369; 0.00</td>
+                <td style="color:red">&#8369; {{ number_format($payroll->undertime_pay, 2) }}</td>
             </tr>
             @if ($payroll->employee->deductions->isNotEmpty())
 

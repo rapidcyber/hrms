@@ -231,20 +231,21 @@
             </form>
         </div>
         <x-slot name="footer">
+            <button wire:click="closeModal" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                Cancel
+            </button>
             @if(!$next)
                 <button
                     wire:click.prevent="validateStep1"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    class="ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                     {{ __('Next') }}
                 </button>
             @else
-                <button wire:click.prevent="store" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                <button wire:click.prevent="store" class="ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                     {{ $employeeId ? 'Update' : 'Add New' }}
                 </button>
             @endif
-            <button wire:click="closeModal" class="ml-4 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
-                Cancel
-            </button>
+
         </x-slot>
     </x-modal>
     {{-- Confirm Delete --}}

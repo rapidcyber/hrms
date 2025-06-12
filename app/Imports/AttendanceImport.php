@@ -19,7 +19,7 @@ class AttendanceImport implements ToCollection
         $shifts = Shift::all();
         $employee = null;
         // dd($rows->skip(20));
-        foreach ($rows->skip(20) as $row) {
+        foreach ($rows->skip(1) as $row) {
 
             $date = $row[2];
             $in_1 = !empty($row[3]) ? Carbon::parse($date . ' ' . $row[3]) : null;

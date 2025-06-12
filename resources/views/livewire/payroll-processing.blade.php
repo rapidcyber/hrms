@@ -258,6 +258,14 @@
                     >
                         Print Payslips
                     </flux:button>
+                    <flux:button
+                        size="sm"
+                        variant="outline"
+                        icon="printer"
+                        wire:click="exportPayrolls()"
+                    >
+                        Export
+                    </flux:button>
                 </div>
                 <x-flux.table
                     :data="$payrolls"
@@ -469,7 +477,7 @@
                 </tr>
                 <tr>
                     <td class="pr-3">Sunday Overtime</td>
-                    <td style="font-weight: bold;color:#3F507F">&#8369; 0.00</td>
+                    <td style="font-weight: bold;color:#3F507F">&#8369; {{ number_format($viewingPayroll->sunday_overtime, 2) }}</td>
                 </tr>
                 <tr>
                     <td>Lates</td>
@@ -509,7 +517,7 @@
         </table>
         <x-slot name="footer">
             <flux:button wire:click="$set('showPayrollModal', false)">Close</flux:button>
-            <flux:button wire:click="downloadPayroll({{$viewingPayroll->id}})">Download</flux:button>
+            <flux:button class="ml-2" variant="primary" wire:click="downloadPayroll({{$viewingPayroll->id}})">Download</flux:button>
         </x-slot>
         @endif
 
@@ -522,7 +530,7 @@
         </div>
         <x-slot name="footer">
             <flux:button wire:click="$set('confirmDeleteAll', false)">Close</flux:button>
-            <flux:button wire:click="deleteAllPayroll()">Delete All</flux:button>
+            <flux:button variant="danger" class="ml-2" wire:click="deleteAllPayroll()">Delete All</flux:button>
         </x-slot>
     </x-modal>
 </div>

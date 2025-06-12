@@ -122,7 +122,7 @@
                 </x-slot:body>
             </x-flux.table>
         </div>
-        @if($attendances->hasPages())
+        @if($attendances->isNotEmpty()) && $attendances->hasPages())
             <div class="mt-4">
                 {{ $attendances->links() }}
             </div>

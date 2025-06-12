@@ -69,6 +69,7 @@ class EmployeeManagement extends Component
 
     public function closeModal()
     {
+        $this->next = false;
         $this->isOpen = false;
     }
 
@@ -198,9 +199,6 @@ class EmployeeManagement extends Component
 
         session()->flash('message', 'Employee Deleted Successfully.');
         DB::commit();
-
-
-
         $this->confirmDelete = 0;
     }
 
