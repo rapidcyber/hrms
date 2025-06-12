@@ -164,7 +164,7 @@ class PayrollProcessing extends Component
 
     public function toggleSelectAllPayroll()
     {
-        $payrolls = Payroll::where('period_start', $this->periodStart)->where('period_end', $this->periodEnd)->get();
+        $payrolls = Payroll::where('period_start','>=', $this->periodStart)->get();
         if ($this->selectAllPayroll) {
             $this->selectedPayrolls = $payrolls->pluck('id')->toArray();
         } else {
@@ -180,9 +180,12 @@ class PayrollProcessing extends Component
                 $payroll->deductions()->detach();
             if($payroll->delete()){
                 session()->flash('message', 'Payrolls deleted successfully!');
-                $this->selectedPayrolls = [];
             }
         }
+
+        $this->selectedPayrolls = [];
+        $this->selectAllPayroll = false;
+
         $this->confirmDeleteAll = false;
     }
 
@@ -545,10 +548,22 @@ class PayrollProcessing extends Component
     // Export Payrolls
     public function exportPayrolls()
     {
+        $this->validate([
+            'periodStart' => 'required|date',
+            'periodEnd' => 'required|date|after_or_equal:periodStart',
+        ]);
+
         $start = $this->periodStart;
         $end = $this->periodEnd;
 
-        return Excel::download(new PayrollExport(['period_start' => $start, 'period_end' => $end]), 'payrolls_' . now()->format('Y-m-d') . '.xlsx');
+        if(
+            !empty($start) && !empty($end)
+        ){
+            return Excel::download(new PayrollExport(['period_start' => $start, 'period_end' => $end]), 'payrolls_' . now()->format('Y-m-d') . '.xlsx');
+        }
+
+        session()->flash('message', 'Select a date range and load employees to begin payroll processing');
+
     }
 
     public function deletePayroll($id){
