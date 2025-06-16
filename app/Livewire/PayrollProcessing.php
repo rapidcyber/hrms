@@ -611,25 +611,25 @@ class PayrollProcessing extends Component
     private function calculateDailyRate($employeeId)
     {
         $employee = Employee::find($employeeId);
-        $start = Carbon::parse($this->periodStart);
-        $end = Carbon::parse($this->periodEnd);
+        // $startOfMonth = Carbon::parse($this->periodStart)->startOfMonth();
+        // $endOfMonth = Carbon::parse($this->periodStart)->endOfMonth();
 
-        $daysInCutoff = 0;
-        $period = $start->toPeriod($end);
-        // dd($period);
-        $rest_days = array_filter(json_decode($employee->rest_days));
-        $restDays = array_keys($rest_days);
-        foreach ($period as $date) {
-            if (!in_array($date->dayOfWeek, $restDays)) {
-                $daysInCutoff++;
-            }
-        }
+        // $daysInMonth = 0;
+        // $period = $startOfMonth->toPeriod($endOfMonth);
 
-        // Compute daily rate
-        if ($daysInCutoff === 0) {
-            return 0; // Avoid division by zero
-        }
+        // $rest_days = array_filter(json_decode($employee->rest_days));
+        // $restDays = array_keys($rest_days);
+        // foreach ($period as $date) {
+        //     if (!in_array($date->dayOfWeek, $restDays)) {
+        //         $daysInMonth++;
+        //     }
+        // }
+        // // Compute daily rate
+        // if ($daysInMonth === 0) {
+        //     return 0; // Avoid division by zero
+        // }
 
-        return ($employee->base_salary/2) / $daysInCutoff;
+        // return $employee->base_salary / $daysInMonth;
+        return ($employee->base_salary/2) / 12;
     }
 }
