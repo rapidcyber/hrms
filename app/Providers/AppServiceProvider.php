@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Providers;
+use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -31,5 +33,16 @@ class AppServiceProvider extends ServiceProvider
 
         // Optional: If you want to publish views
         $this->loadViewsFrom(resource_path('views/components/flux'), 'flux');
+
+        Collection::macro('paginate', function ($perPage = 15, $pageName = 'page') {
+            $page = LengthAwarePaginator::resolveCurrentPage($pageName);
+            return new LengthAwarePaginator(
+                $this->forPage($page, $perPage), //Items for the current page
+                $this->count(), //Total items
+                $perPage, //Items per page
+                $page, //Current page
+                ['path' => LengthAwarePaginator::resolveCurrentPath(), 'pageName' => $pageName] //Pagination related settings
+            );
+        });
     }
 }

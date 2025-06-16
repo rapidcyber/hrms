@@ -47,21 +47,73 @@ class AttendanceTracking extends Component
         if (empty($this->periodStart) || empty($this->periodEnd)) {
             return view('livewire.attendance-tracking', ['attendances' => collect(), 'employees'=> Employee::latest()->get()]);
         }
-        $attendances = Attendance::join('employees', 'attendances.employee_id', '=', 'employees.id')
-            ->where(function($query) {
-            $query->where('employees.first_name', 'like', '%'. $this->search.'%')
-                  ->orWhere('employees.last_name', 'like', '%'. $this->search.'%')
-                  ->orWhere('employees.employee_id', 'like', '%' .$this->search.'%')
-                  ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$this->search}%"]);
-            })
-            ->whereBetween('attendances.date', [$this->periodStart, $this->periodEnd])
-            ->orderBy($this->sortField, is_array($this->sortDirection) ? ($this->sortDirection[$this->sortField] ?? 'desc') : $this->sortDirection)
-            ->select('attendances.*')
-            ->paginate(10);
 
         $employees = Employee::latest()->get();
 
-        return view('livewire.attendance-tracking', ['attendances' => $attendances, 'employees'=> $employees]);
+        $period = [];
+        if ($this->periodStart && $this->periodEnd) {
+            $start = Carbon::parse($this->periodStart);
+            $end = Carbon::parse($this->periodEnd);
+            $period = $start->toPeriod($end);
+
+            $newAttandances = collect();
+            foreach ($period as $date) {
+                foreach ($employees as $employee) {
+                    // Check if attendance exists for this employee on this date
+
+                    $attendancesDate = $employee->attendances->filter(function ($attendance) use ($date, $employee) {
+                        return Carbon::parse($attendance->date)->isSameDay($date) && $attendance->employee_id == $employee->id;
+                    });
+                    if ($attendancesDate->isEmpty()) {
+                        // If no attendance for this employee on this date, create a new attendance record
+                        $newAttendance = new Attendance();
+                        $newAttendance->date = $date->format('Y-m-d');
+                        $newAttendance->employee_id = $employee->id;
+                        $newAttendance->status = 'absent'; // Default status
+                        $newAttendance->source = 'manual'; // Default source
+                        $newAttendance->hours_worked = 0; // Default hours worked
+                        $newAttandances->push($newAttendance);
+                    } else {
+                        $newAttandances = $newAttandances->merge($attendancesDate);
+                    }
+                }
+            }
+            // Filter by employee first_name if search is provided
+            if (!empty($this->search)) {
+                $newAttandances = $newAttandances->filter(function ($attendance) use ($employees) {
+                    $employee = $employees->firstWhere('id', $attendance->employee_id);
+                    $fullName = $employee ? strtolower($employee->first_name . ' ' . $employee->last_name) : '';
+                    return $fullName && stripos($fullName, strtolower($this->search)) !== false;
+                });
+            }
+            // Sort by employee first_name and date according to sortDirection
+            $newAttandances = $newAttandances->sort(function ($a, $b) use ($employees) {
+                $employeeA = $employees->firstWhere('id', $a->employee_id);
+                $employeeB = $employees->firstWhere('id', $b->employee_id);
+                $firstNameA = $employeeA ? strtolower($employeeA->first_name) : '';
+                $firstNameB = $employeeB ? strtolower($employeeB->first_name) : '';
+                $dateA = $a->date ?? '';
+                $dateB = $b->date ?? '';
+
+                // Sort by first_name
+                $firstNameDirection = $this->sortDirection['employees.first_name'] === 'desc' ? -1 : 1;
+                if ($firstNameA !== $firstNameB) {
+                    return $firstNameDirection * strcmp($firstNameA, $firstNameB);
+                }
+
+                // Sort by date
+                $dateDirection = $this->sortDirection['date'] === 'desc' ? -1 : 1;
+                return $dateDirection * strcmp($dateA, $dateB);
+            })->values();
+
+            // dd($newAttandances->count());
+            $perPage = 10;
+            $paginatedAttendances = $newAttandances->paginate($perPage);
+        }
+
+        // Convert the attendance collection to a Laravel Collection for easier manipulation
+
+        return view('livewire.attendance-tracking', ['attendances' => $paginatedAttendances, 'employees'=> $employees]);
     }
 
     public function syncBiometricData()
@@ -221,18 +273,31 @@ class AttendanceTracking extends Component
         $this->resetFields();
     }
 
-    public function edit($id){
+    public function newEmployeeAttendance($employeeId){
         $this->isOpen = true;
-        $this->attendanceId = $id;
-        $attendance = Attendance::find($id);
 
-        if ($attendance) {
-            $this->employeeId = $attendance->employee_id;
-            $this->date = $attendance->date;
-            $this->checkIn = $attendance->in_1 ?? $attendance->in_2 ?? $attendance->in_3;
-            $this->checkOut = $attendance->out_3 ?? $attendance->out_2 ?? $attendance->out_1;
-            $this->status = $attendance->status;
-            $this->remarks = $attendance->remarks;
+    }
+
+    public function edit($id = null, $employeeId){
+
+        $this->isOpen = true;
+        $this->resetFields();
+        $this->attendanceId = null;
+        $this->employeeId = $employeeId;
+        $this->status = 'present';
+        $this->remarks = '';
+
+        if ($id) {
+            $this->attendanceId = $id;
+            $attendance = Attendance::find($id);
+            if ($attendance) {
+                $this->employeeId = $attendance->employee_id;
+                $this->date = $attendance->date;
+                $this->checkIn = $attendance->in_1 ?? $attendance->in_2 ?? $attendance->in_3;
+                $this->checkOut = $attendance->out_3 ?? $attendance->out_2 ?? $attendance->out_1;
+                $this->status = $attendance->status;
+                $this->remarks = $attendance->remarks;
+            }
         }
     }
 

@@ -103,7 +103,7 @@
                             {{$attendance->hours_worked}}
                         </x-flux.table.cell>
                             <x-flux.table.cell class="text-right">
-                                <x-flux::button wire:click="edit({{ $attendance->id }})" icon="square-pen" secondary>
+                                <x-flux::button wire:click="edit({{ $attendance->id ?? 0 }}, {{ $attendance->employee_id }})" icon="square-pen" secondary>
                                     {{ __('Edit') }}
                                 </x-flux::button>
                                 <x-flux::button wire:click="$set('confirmDelete', {{ $attendance->id }})" icon="trash" variant="danger">

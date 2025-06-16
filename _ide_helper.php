@@ -24214,6 +24214,19 @@ namespace Illuminate\Support {
             return \Illuminate\Support\Collection::storeExcel($filePath, $disk, $writerType, $withHeadings);
         }
 
+        /**
+         * 
+         *
+         * @see \App\Providers\AppServiceProvider::boot()
+         * @param mixed $perPage
+         * @param mixed $pageName
+         * @static 
+         */
+        public static function paginate($perPage = 15, $pageName = 'page')
+        {
+            return \Illuminate\Support\Collection::paginate($perPage, $pageName);
+        }
+
             }
     }
 
