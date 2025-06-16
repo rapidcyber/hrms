@@ -261,7 +261,7 @@ class PayrollProcessing extends Component
             }
         }
         // Compute daily and hourly rate
-        $dailyRate = $employee->base_salary / $daysInMonth;
+        $dailyRate = $this->calculateDailyRate($employeeId);
 
         if ($employee->shift && $employee->shift->time_in && $employee->shift->time_out) {
             $timeIn = Carbon::parse($employee->shift->time_in);
