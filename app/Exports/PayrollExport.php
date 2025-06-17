@@ -120,7 +120,7 @@ class PayrollExport implements FromCollection, WithHeadings
      */
     private function calculateOTLates($employeeId){
         $startOfMonth = Carbon::parse($this->parameter['period_start'])->startOfMonth();
-        $endOfMonth = Carbon::parse($this->parameter['period_end'])->endOfMonth();
+        $endOfMonth = Carbon::parse($this->parameter['period_start'])->endOfMonth();
 
         $daysInMonth = 0;
         $period = $startOfMonth->toPeriod($endOfMonth);
@@ -135,7 +135,7 @@ class PayrollExport implements FromCollection, WithHeadings
             }
         }
         // Compute daily and hourly rate
-        $dailyRate = $employee->base_salary / $daysInMonth;
+        $dailyRate = $employee->base_salary / 24;
 
         if ($employee->shift && $employee->shift->time_in && $employee->shift->time_out) {
             $timeIn = Carbon::parse($employee->shift->time_in);

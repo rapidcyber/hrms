@@ -78,17 +78,19 @@ class PayrollProcessing extends Component
             })
             ->orderBy($this->sortField, $this->sortDirection)
             ->get();
-
-        foreach ($employees as $employee) {
-            $summary = $this->calculateOTLates($employee->id);
-            $this->overtimes[$employee->id] = [
-                'employee_id' => $employee->id,
-                'hours' => number_format($summary['overtime'] ?? 0, 2),
-                'status' => false,
-            ];
-            $employee->overtime_hours = $this->overtimes[$employee->id]['hours'];
-            $employee->overtime_status = $this->overtimes[$employee->id]['status'];
+        if($employees->isNotEmpty()){
+            foreach ($employees as $employee) {
+                $summary = $this->calculateOTLates($employee->id);
+                $this->overtimes[$employee->id] = [
+                    'employee_id' => $employee->id,
+                    'hours' => number_format($summary['overtime'] ?? 0, 2),
+                    'status' => false,
+                ];
+                $employee->overtime_hours = $this->overtimes[$employee->id]['hours'];
+                $employee->overtime_status = $this->overtimes[$employee->id]['status'];
+            }
         }
+
         $this->employees = $employees;
     }
 
@@ -126,17 +128,22 @@ class PayrollProcessing extends Component
                 $payroll->period_start = $this->periodStart;
                 $payroll->period_end = $this->periodEnd;
 
-                // Calculate total deductions
-                if($overtime['status']){
-                    $payroll->overtime_pay = $this->calculateOvertime($overtime['hours'], $employeeId);
-                } else {
-                    $payroll->overtime_pay = 0;
-                }
+                $payroll->overtime_pay = $overtime['status'] ? $summary['ot_pay'] : 0;
                 $payroll->gross_salary = ($employee->base_salary / 2) + $payroll->overtime_pay + $summary['sunday_overtime'];
 
+                // Calculate total deductions
                 $payroll->total_deductions = $employee->deductions->sum('amount') + $summary['late_pay'] + $summary['undertime_pay'] + $absentPay;
 
                 $payroll->net_salary = $payroll->gross_salary - $payroll->total_deductions;
+
+
+                if($employee->position->level < 2){
+                    $summary = $this->computePerDay($employeeId);
+                    $payroll->gross_salary = $summary['base_salary'];
+                    // $payroll->overtime_pay =  $overtime['status'] ? $summary['overtime_pay'] : 0;
+                    $payroll->net_salary = $summary['net_salary'] + $payroll->overtime_pay - $employee->deductions->sum('amount');
+                }
+                // dd($payroll->gross_salary, $payroll->overtime_pay, $payroll->net_salary, $employee->deductions->sum('amount'), $summary['late_pay'], $summary['undertime_pay'], $absentPay);
                 // dd($payroll->net_salary);
                 $payroll->status = 'processed';
 
@@ -393,14 +400,13 @@ class PayrollProcessing extends Component
 
     public function reloadEmployees()
     {
-        $this->dispatch('loadEmployees');
         $this->validate([
             'periodStart' => 'required|date',
             'periodEnd' => 'required|date|after_or_equal:periodStart',
         ]);
         $this->selectedEmployees = [];
         $this->selectedPayrolls = [];
-
+        $this->dispatch('loadEmployees');
     }
 
     public function saveDeduction()
@@ -486,7 +492,10 @@ class PayrollProcessing extends Component
         $payroll->undertime_pay = $summary['undertime_pay'];
         $payroll->sunday_overtime = $summary['sunday_overtime'];
 
-
+        if($payroll->employee->position->level < 2 ){
+            $summary = $this->computePerDay($payroll->employee_id);
+            $payroll->gross_salary = $summary['base_salary'];
+        }
 
         $this->viewingPayroll = $payroll;
 
@@ -511,6 +520,11 @@ class PayrollProcessing extends Component
         $payroll->absents = $this->getAbsents($payroll->employee_id, [$payroll->period_start, $payroll->period_end]) * $this->calculateDailyRate($payroll->employee_id);
         $payroll->undertime_pay = $summary['undertime_pay'];
         $payroll->sunday_overtime = $summary['sunday_overtime'];
+
+        if ($payroll->employee->position->level < 2) {
+            $summary = $this->computePerDay($payroll->employee_id);
+            $payroll->gross_salary = $summary['base_salary'];
+        }
 
         if ($payroll) {
             $pdf = Pdf::loadView('payroll.payslip', ['payroll' => $payroll],[
@@ -540,7 +554,14 @@ class PayrollProcessing extends Component
             $payroll->absents = $this->getAbsents($payroll->employee_id, [$payroll->period_start, $payroll->period_end]) * $this->calculateDailyRate($payroll->employee_id);
             $payroll->undertime_pay = $summary['undertime_pay'];
             $payroll->sunday_overtime = $summary['sunday_overtime'];
+
+            if ($payroll->employee->position->level < 2) {
+                $summary = $this->computePerDay($payroll->employee_id);
+                $payroll->gross_salary = $summary['base_salary'];
+                $payroll->sunday_overtime = $summary['sunday_overtime'];
+            }
         });
+
         $pdf = Pdf::loadView('payroll.payrolls', ['payrolls' => $payrolls]);
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->stream();
@@ -632,4 +653,50 @@ class PayrollProcessing extends Component
         // return $employee->base_salary / $daysInMonth;
         return ($employee->base_salary/2) / 12;
     }
+
+    private function computePerDay($employeeId)
+    {
+        $employee = Employee::find($employeeId);
+        $dailyRate = $this->calculateDailyRate($employeeId);
+        $absentCount = $this->getAbsents($employeeId);
+        $absentPay = $absentCount * $dailyRate;
+
+        $periodCount = Carbon::parse($this->periodStart)->toPeriod(Carbon::parse($this->periodEnd));
+
+        $restDays = array_filter(json_decode($employee->rest_days));
+        $daysInPeriod = [];
+
+        foreach ($periodCount as $date) {
+            if (!in_array($date->dayOfWeek, array_keys($restDays))) {
+                $daysInPeriod[] = $date->toDateString();
+            }
+        }
+
+        $otlates = $this->calculateOTLates($employeeId);
+
+        $overtimeHours = $otlates['overtime'] ?? 0;
+        $overtimePay = $otlates['ot_pay'] ?? 0;
+        $latePay = $otlates['late_pay'] ?? 0;
+        $undertimePay = $otlates['undertime_pay'] ?? 0;
+        $sundayOvertime = $otlates['sunday_overtime'] ?? 0;
+
+        $base_salary = $dailyRate * count($daysInPeriod);
+
+        $net_salary = $base_salary + $sundayOvertime - $absentPay - $latePay - $undertimePay;
+
+        return [
+            'daily_rate' => $dailyRate,
+            'absent_count' => $absentCount,
+            'absent_pay' => $absentPay,
+            'overtime_hours' => $overtimeHours,
+            'overtime_pay' => $overtimePay,
+            'late_pay' => $latePay,
+            'undertime_pay' => $undertimePay,
+            'sunday_overtime' => $sundayOvertime,
+            'base_salary' => $base_salary,
+            'net_salary' => $net_salary,
+        ];
+
+    }
+
 }

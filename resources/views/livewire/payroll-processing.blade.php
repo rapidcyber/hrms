@@ -469,7 +469,13 @@
                 </tr>
                 <tr>
                     <td>Basic Payroll:</td>
-                    <td style="font-weight: bold;color:#3F507F">₱ {{ number_format($viewingPayroll->employee->base_salary / 2, 2) }}</td>
+                    <td style="font-weight: bold;color:#3F507F">₱
+                        {{ number_format(
+                            $viewingPayroll->employee->position->level < 2
+                            ? $viewingPayroll->gross_salary
+                            : $viewingPayroll->employee->base_salary / 2, 2
+                        ) }}
+                    </td>
                 </tr>
                 <tr>
                     <td>Over Time:</td>
