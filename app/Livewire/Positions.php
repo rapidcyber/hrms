@@ -10,21 +10,25 @@ class Positions extends Component
 {
     use WithPagination;
     public $name;
+    public $type = 2; // 1 for daily 2 for fixed monthly
     public $description;
-    public $positionID;
+    public $positionId;
     public $sortField = 'id';
     public $sortDirection = 'asc';
     public $showModal = false;
     public $confirmDelete = false;
     public $listeners = ['positionAdded', 'positionUpdated'];
+    public $isEditMode = false;
     public function positionAdded($position)
     {
         $this->resetForm();
         session()->flash('message', 'Position added successfully.');
+        $this->showModal = false;
     }
     public function positionUpdated($position)
     {
         $this->resetForm();
+        $this->showModal = false;
         session()->flash('message', 'Position updated successfully.');
     }
     public function resetForm()
@@ -36,12 +40,15 @@ class Positions extends Component
     }
     public function edit($positionId)
     {
+        $this->resetForm();
         $this->showModal = true;
         $position = Position::find($positionId);
+        $this->isEditMode = true;
         if ($position) {
             $this->name = $position->name;
+            $this->type = $position->level;
             $this->description = $position->description;
-            $this->positionID = $position->id;
+            $this->positionId = $position->id;
 
         }
     }
@@ -75,23 +82,36 @@ class Positions extends Component
         $this->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'type' => 'required|integer|min:1|max:5', // Assuming levels are between 1 and 5
         ]);
 
         if ($this->isEditMode) {
             $position = Position::find($this->positionId);
             if ($position) {
-                $position->update([
-                    'name' => $this->name,
-                    'description' => $this->description,
-                ]);
-                $this->emit('positionUpdated', $position);
+                $position->name = $this->name;
+                $position->description = $this->description;
+                $position->level = $this->type;
+                if($position->save()){
+                    $log = [
+                        'action' => 'update_Position',
+                        'description' => 'Position updated'
+                    ];
+                    log_activity($log['action'], $log['description'], $position, ['Position'=>$position->name]);
+                    $this->dispatch('positionUpdated', $position);
+                } else {
+                    session()->flash('error', 'Failed to update position.');
+                }
+
+
+
             }
         } else {
             Position::create([
                 'name' => $this->name,
                 'description' => $this->description,
+                'level' => $this->type,
             ]);
-            $this->emit('positionAdded', null);
+            $this->dispatch('positionAdded', null);
         }
 
         $this->resetForm();
@@ -109,5 +129,6 @@ class Positions extends Component
 
     public function create(){
         $this->showModal = true;
+        $this->resetForm();
     }
 }

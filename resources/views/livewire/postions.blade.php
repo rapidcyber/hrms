@@ -62,14 +62,24 @@
         {{ $positions->links() }}
     </div>
 
-    <x-modal wire:show="showModal" title="{{ $positionID ? 'Edit Position' : 'Create Position' }}">
-        <form wire:submit.prevent="savePosition">
+    <x-modal wire:show="showModal" title="{{ $positionId ? 'Edit Position' : 'Create Position' }}">
+        <form>
             <div class="mb-4">
                 <label for="name" class="block text-sm font-medium text-gray-700">Position Name</label>
-                <input type="text" id="name" wire:model="position.name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                <input type="text" id="name" wire:model="name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
                 @error('name')
                     <span class="text-red-500 text-sm">{{ $message }}</span>
                 @enderror
+            </div>
+            <div class="mb-4">
+                <flux:select
+                    wire:model="type"
+                    placeholder="Select salary type"
+                    label="Salary Type">
+                    <flux:select.option value="1">Per Day</flux:select.option>
+                    <flux:select.option value="2">Fixed</flux:select.option>
+                </flux:select>
+
             </div>
             <div class="mb-4">
                 <label for="description" class="block text-sm font-medium text-gray-700">description</label>
@@ -84,7 +94,7 @@
                     Cancel
                 </button>
                 <button wire:click="savePosition" class="ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                    {{ $positionID ? 'Update' : 'Add New' }}
+                    {{ $positionId ? 'Update' : 'Add New' }}
                 </button>
             </x-slot>
     </x-modal>
