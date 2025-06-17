@@ -128,7 +128,7 @@ class PayrollProcessing extends Component
                 $payroll->period_start = $this->periodStart;
                 $payroll->period_end = $this->periodEnd;
 
-                $payroll->overtime_pay = $overtime['status'] ? $summary['ot_pay'] : 0;
+                $payroll->overtime_pay = $overtime['status'] ? $overtime['hours'] * ($this->calculateDailyRate($employeeId)/8) : 0;
                 $payroll->gross_salary = ($employee->base_salary / 2) + $payroll->overtime_pay + $summary['sunday_overtime'];
 
                 // Calculate total deductions
