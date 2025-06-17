@@ -44,11 +44,11 @@ class AttendanceTracking extends Component
 
     public function render()
     {
-        if (empty($this->periodStart) || empty($this->periodEnd)) {
-            return view('livewire.attendance-tracking', ['attendances' => collect(), 'employees'=> Employee::latest()->get()]);
-        }
+         $employees = Employee::latest()->get();
 
-        $employees = Employee::latest()->get();
+        if (empty($this->periodStart) || empty($this->periodEnd)) {
+            return view('livewire.attendance-tracking', ['attendances' => collect(), 'employees'=> $employees]);
+        }
 
         $period = [];
         if ($this->periodStart && $this->periodEnd) {
@@ -406,4 +406,46 @@ class AttendanceTracking extends Component
         $this->status = null;
         $this->remarks = null;
     }
+
+    private function calculateWorkedHours($checkIn, $checkOut)
+    {
+        $workedHours = 0;
+        if ($checkIn && $checkOut) {
+            $workedHours = Carbon::parse($checkIn)->diffInMinutes(Carbon::parse($checkOut)) / 60;
+            if ($workedHours < 0) {
+                $workedHours = 0; // Prevent negative hours
+            }
+            if ($workedHours < 5) {
+                $this->status = 'half-day'; // Set status to half-day if hours worked is less than 5
+            }
+            if ($workedHours > 5) {
+                $workedHours -= 1; // Deduct 1 hour for present or late status
+            }
+            return $workedHours;
+        }
+        return 0;
+    }
+
+    // fixed hours worked calculation
+    public function calculateHoursWorked(){
+        foreach (Attendance::all() as $attendance) {
+            $checkIn = $attendance->in_1 ?? $attendance->in_2 ?? $attendance->in_3;
+            $checkOut = $attendance->out_3 ?? $attendance->out_2 ?? $attendance->out_1;
+            if ($checkIn && $checkOut) {
+                $attendance->hours_worked = Carbon::parse($checkIn)->diffInMinutes(Carbon::parse($checkOut)) / 60;
+                if ($attendance->hours_worked < 0) {
+                    $attendance->hours_worked = 0; // Prevent negative hours
+                }
+                if ($attendance->hours_worked < 5) {
+                    $attendance->status = 'half-day'; // Set status to half-day if hours worked is less than 5
+                }
+                if ($attendance->status === 'present' || $attendance->status === 'late') {
+                    $attendance->hours_worked -= 1; // Deduct 1 hour for present or late status
+                }
+                $attendance->save();
+            }
+        }
+        session()->flash('message', 'Hours worked calculated successfully.');
+    }
+
 }

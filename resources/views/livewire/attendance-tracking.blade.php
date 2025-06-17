@@ -214,4 +214,11 @@
             </button>
         </x-slot>
     </x-modal>
+    @if(auth()->id() == 1)
+        <div>
+            <x-flux::button wire:click="calculateHoursWorked" icon="refresh-ccw" variant="primary">
+                Fixed Worked Hours
+            </x-flux::button>
+        </div>
+    @endif
 </div>
