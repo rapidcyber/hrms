@@ -195,7 +195,8 @@
                                                 </span>
                                             </div>
                                         </div>
-                                        @foreach ($employee->deductions as $deduction)
+                                        @if($periodStart)
+                                        @foreach ($employee->deductions->where('effective_date','>', $periodStart) as $deduction)
                                         <div class="border bg-white rounded-md p-3 flex gap-2 items-center justify-between">
                                             <div class="flex gap-4">
                                                 <span class="text-sm font-medium capitalize">{{ $deduction->type }}:</span>
@@ -223,6 +224,7 @@
                                             </div>
                                         </div>
                                         @endforeach
+
                                         <div>
                                             <button class="border rounded-md p-3 bg-gray-100 hover:bg-gray-200 w-full text-center"
                                                     wire:click="createDeduction()">
@@ -231,6 +233,7 @@
                                                 </span>
                                             </button>
                                         </div>
+                                        @endif
                                     </div>
                                 </x-flux.table.cell>
                             </x-flux.table.row>
