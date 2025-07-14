@@ -142,11 +142,9 @@ class PayrollProcessing extends Component
                 if($employee->position->level < 2){
                     $summary = $this->computePerDay($employeeId);
                     $payroll->gross_salary = $summary['base_salary'];
-                    // $payroll->overtime_pay =  $overtime['status'] ? $summary['overtime_pay'] : 0;
-                    $payroll->net_salary = $summary['net_salary'] + $payroll->overtime_pay - $payroll->total_deductions;
+                    $payroll->net_salary = $summary['base_salary'] + $payroll->overtime_pay - $payroll->total_deductions;
                 }
-                // dd($payroll->gross_salary, $payroll->overtime_pay, $payroll->net_salary, $employee->deductions->sum('amount'), $summary['late_pay'], $summary['undertime_pay'], $absentPay);
-                // dd($payroll->net_salary);
+
                 $payroll->status = 'processed';
 
                 // dd(($employee->base_salary / 2), $payroll->overtime_pay, $summary['sunday_overtime'],$employee->deductions->sum('amount'), $summary['late_pay'], $summary['undertime_pay'], $absentPay);
