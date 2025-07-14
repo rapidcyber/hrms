@@ -143,7 +143,7 @@ class PayrollProcessing extends Component
                     $summary = $this->computePerDay($employeeId);
                     $payroll->gross_salary = $summary['base_salary'];
                     // $payroll->overtime_pay =  $overtime['status'] ? $summary['overtime_pay'] : 0;
-                    $payroll->net_salary = $summary['net_salary'] + $payroll->overtime_pay - $employee->deductions->sum('amount');
+                    $payroll->net_salary = $summary['net_salary'] + $payroll->overtime_pay - $payroll->total_deductions;
                 }
                 // dd($payroll->gross_salary, $payroll->overtime_pay, $payroll->net_salary, $employee->deductions->sum('amount'), $summary['late_pay'], $summary['undertime_pay'], $absentPay);
                 // dd($payroll->net_salary);
