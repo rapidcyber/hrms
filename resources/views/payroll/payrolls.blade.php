@@ -88,10 +88,11 @@
                 <td>Under Time:</td>
                 <td style="color:red">&#8369; {{ number_format($payroll->undertime_pay, 2) }}</td>
             </tr>
-            @if ($payroll->employee->deductions->isNotEmpty())
+            @php($deductions = $payroll->employee->deductions->where('effective_date', '>=', $payroll->period_start))
+            @if ($deductions->isNotEmpty())
 
-                @if($payroll->employee->deductions->count() > 1)
-                    @foreach ($payroll->employee->deductions as $deduction)
+                @if($deductions->count() > 1)
+                    @foreach ($deductions as $deduction)
                         <tr>
                             <td>{{$deduction->type}}: </td>
                             <td style="color:red;font-weight:bold">₱ {{ number_format($deduction->amount, 2) }}</td>
