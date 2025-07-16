@@ -162,10 +162,10 @@ class AttendanceTracking extends Component
                 'timestamp' => Carbon::parse($record[3]),
             ];
         });
-
+       
         try {
             DB::transaction(function () use ($punches) {
-                foreach ($punches->whereBetween('timestamp', [$this->periodStart, $this->periodEnd]) as $punch) {
+                foreach ($punches->whereBetween('timestamp', [$this->periodStart, Carbon::parse($this->periodEnd)->addDay()]) as $punch) {
                     $attendance = Attendance::where('employee_id', $punch['employee_id'])
                         ->whereDate('date', $punch['timestamp']->toDateString())
                         ->first();
