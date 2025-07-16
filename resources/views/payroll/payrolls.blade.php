@@ -99,10 +99,10 @@
                         </tr>
                     @endforeach
                 @else
-                    @if($payroll->employee->deductions->first() == 'cash-advance')
+                    @if($deductions->first() == 'cash-advance')
                     <tr>
                         <td>Cash Advance: </td>
-                        <td style="color:red;font-weight:bold">₱ {{ number_format($payroll->employee->deductions->first()->amount, 2) }}</td>
+                        <td style="color:red;font-weight:bold">₱ {{ number_format($deductions->first()->amount, 2) }}</td>
                     </tr>
                     <tr>
                         <td>loan: </td>
@@ -111,7 +111,7 @@
                     @else
                     <tr>
                         <td>Loan: </td>
-                        <td style="color:red;font-weight:bold">₱ {{ number_format($payroll->employee->deductions->first()->amount, 2) }}</td>
+                        <td style="color:red;font-weight:bold">₱ {{ number_format($deductions->first()->amount, 2) }}</td>
                     </tr>
                     <tr>
                         <td>Cash Advance: </td>
