@@ -100,7 +100,7 @@
                 <td>Under Time:</td>
                 <td style="color:red">&#8369; {{ number_format($payroll->undertime_pay, 2) }}</td>
             </tr>
-            @forelse ($payroll->employee->deductions->where('effective_date', '>=', $payroll->period_start ) as $deduction)
+            @forelse ($payroll->deductions->where('effective_date', '>=', $payroll->period_start ) as $deduction)
             <tr>
                 <td>{{ ucfirst($deduction->type)}}: </td>
                 <td style="color:red;font-weight:bold">₱ {{number_format($deduction->amount,2)}}</td>

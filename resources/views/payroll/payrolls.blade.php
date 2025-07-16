@@ -88,7 +88,7 @@
                 <td>Under Time:</td>
                 <td style="color:red">&#8369; {{ number_format($payroll->undertime_pay, 2) }}</td>
             </tr>
-            @php($deductions = $payroll->employee->deductions->where('effective_date', '>=', $payroll->period_start))
+            @php($deductions = $payroll->deductions->where('effective_date', '>=', $payroll->period_start))
             @if ($deductions->isNotEmpty())
 
                 @if($deductions->count() > 1)
