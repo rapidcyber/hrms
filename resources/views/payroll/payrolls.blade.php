@@ -99,7 +99,7 @@
                         </tr>
                     @endforeach
                 @else
-                    @if($deductions->first() == 'cash-advance')
+                    @if($deductions->first()->type == 'cash-advance')
                     <tr>
                         <td>Cash Advance: </td>
                         <td style="color:red;font-weight:bold">₱ {{ number_format($deductions->first()->amount, 2) }}</td>
