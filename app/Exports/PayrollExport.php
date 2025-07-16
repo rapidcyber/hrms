@@ -38,7 +38,7 @@ class PayrollExport implements FromCollection, WithHeadings
                     'SUNDAY OVERTIME' => 'PHP '. number_format($summary['sunday_overtime'], 2),
                     'LATE' => 'PHP '. number_format($summary['lates'], 2),
                     'UNDERTIME' => 'PHP '. number_format($summary['undertime'], 2),
-                    'CASH ADVANCE' => 'PHP '. number_format($payroll->deductions->sum('amount') ?? 0, 2),
+                    'CASH ADVANCE' => 'PHP '. number_format($payroll->deductions->where('effective_date', '>=', $payroll->period_start)->sum('amount') ?? 0, 2),
                     'ABSENT' => 'PHP '. number_format($absents * $this->calculateDailyRate($employeeId),2),
                     'TOTAL' => 'PHP '. number_format($payroll->net_salary, 2)
                 ];
