@@ -162,7 +162,7 @@ class AttendanceTracking extends Component
                 'timestamp' => Carbon::parse($record[3]),
             ];
         });
-       
+
         try {
             DB::transaction(function () use ($punches) {
                 foreach ($punches->whereBetween('timestamp', [$this->periodStart, Carbon::parse($this->periodEnd)->addDay()]) as $punch) {
@@ -323,14 +323,19 @@ class AttendanceTracking extends Component
         session()->flash('message', 'Attendance data imported successfully.');
     }
 
-    public function export()
+    public function export($type)
     {
         $this->validate([
             'periodStart' => 'required|date',
             'periodEnd' => 'required|date|after_or_equal:periodStart',
         ]);
 
-        return Excel::download(new AttendanceExport(['start_date' => $this->periodStart, 'end_date' => $this->periodEnd]), 'attendance_' . now()->format('Y-m-d') . '.xlsx');
+        if($type === 2){
+            return redirect(route('attendance.export', [], false) . '?start_date=' . $this->periodStart . '&end_date=' . $this->periodEnd);
+        }
+
+        return Excel::download(new AttendanceExport(['start_date' => $this->periodStart, 'end_date' => $this->periodEnd]), 'attendance_' . now()->format('Y-m-d') . '.csv');
+
     }
 
     public function store()

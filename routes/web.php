@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 use PhpParser\Node\Expr\FuncCall;
+use App\Http\Controllers\AttendanceController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -24,6 +25,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/attendance', function(){
         return view('attendance.index');
     })->name('attendance');
+    Route::get('/attendance/export', [AttendanceController::class, 'export'])->name('attendance.export');
     Route::get('/payroll', function(){
         return view('payroll.index');
     })->name('payroll');
