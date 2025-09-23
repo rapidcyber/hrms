@@ -311,6 +311,8 @@ namespace App\Models{
  * @property-read int|null $payrolls_count
  * @property-read \App\Models\Position|null $position
  * @property-read \App\Models\Shift|null $shift
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ThirteenthPay> $thirteenthPays
+ * @property-read int|null $thirteenth_pays_count
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Employee active()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Employee department($departmentId)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Employee filter(array $filters)
@@ -529,6 +531,18 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Shift whereTimeOut($value)
  */
 	class Shift extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * 
+ *
+ * @property-read \App\Models\Employee|null $employee
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ThirteenthPay newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ThirteenthPay newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ThirteenthPay query()
+ */
+	class ThirteenthPay extends \Eloquent {}
 }
 
 namespace App\Models{

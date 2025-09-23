@@ -48,11 +48,13 @@
                     class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                     Load Attendance
                 </button>
-                <x-flux::button wire:click="export(1)" icon="table-cells" variant="primary" class="bg-green-700">Export to Excel</x-flux::button>
-                <x-flux::button wire:click="export(2)" icon="file-up" variant="primary" class="bg-orange-700">Export to PDF</x-flux::button>
-
-
-
+                <flux:dropdown>
+                    <flux:button icon:trailing="chevron-down">Export to</flux:button>
+                    <flux:menu>
+                        <flux:menu.item wire:click="export(1)" icon="table-cells">Excel</flux:menu.item>
+                        <flux:menu.item wire:click="export(2)" icon="document">PDF</flux:menu.item>
+                    </flux:menu>
+                </flux:dropdown>
             </div>
         </div>
         @if (session()->has('message'))

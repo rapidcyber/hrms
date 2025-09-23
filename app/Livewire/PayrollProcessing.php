@@ -68,7 +68,7 @@ class PayrollProcessing extends Component
         $cutoffEnd = Carbon::parse($this->periodEnd)->format('Y-m-d');
 
         $employees = Employee::whereHas('attendances', function($query) use($cutoffEnd,$cutoffStart) {
-            // $query->whereNotNull('in_1');
+                // $query->whereNotNull('in_1');
                 $query->whereBetween('attendances.date', [$cutoffStart, $cutoffEnd]);
             })->where(function($q){
                 $q->where('first_name', 'like', '%'. $this->search.'%')
@@ -132,10 +132,10 @@ class PayrollProcessing extends Component
                 $payroll->gross_salary = ($employee->base_salary / 2) + $payroll->overtime_pay + $summary['sunday_overtime'];
 
                 $employeeDeductions = $employee->deductions->where('effective_date', '>=',$this->periodStart)->sum('amount') ?? 0;
-               
+
                 // Calculate total deductions
                 $payroll->total_deductions = $employeeDeductions + $summary['late_pay'] + $summary['undertime_pay'] + $absentPay;
-                
+
                 $payroll->net_salary = $payroll->gross_salary - $payroll->total_deductions;
 
 

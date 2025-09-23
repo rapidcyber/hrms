@@ -47,6 +47,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/user-management', function(){
         return view('user-management');
     })->name('user-management');
+    Route::get('/month13', function(){
+        return view ('payroll.month13');
+    })->name('month13');
 });
 
 

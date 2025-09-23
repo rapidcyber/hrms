@@ -24363,11 +24363,12 @@ namespace Illuminate\View {
          *
          * @see \Flux\FluxServiceProvider::bootMacros()
          * @param mixed $key
+         * @param mixed $default
          * @static 
          */
-        public static function pluck($key)
+        public static function pluck($key, $default = null)
         {
-            return \Illuminate\View\ComponentAttributeBag::pluck($key);
+            return \Illuminate\View\ComponentAttributeBag::pluck($key, $default);
         }
 
         /**

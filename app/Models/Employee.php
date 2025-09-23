@@ -44,6 +44,9 @@ class Employee extends Model
     {
         return $this->belongsTo(Position::class);
     }
+    public function thirteenthPays(){
+        return $this->hasMany(ThirteenthPay::class);
+    }
     public function scopeFilter($query, array $filters)
     {
         if ($filters['search'] ?? false) {
