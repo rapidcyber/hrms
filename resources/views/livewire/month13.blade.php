@@ -114,9 +114,11 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap" colspan="3">No employees found.</td>
+                                    <td class="px-6 py-4 whitespace-nowrap" colspan="4">No employees found.</td>
                                 </tr>
                                 @endforelse
+
+
                             </tbody>
                             <tfoot>
                                 <tr>
@@ -142,6 +144,10 @@
                 <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
 
                     <table class="min-w-full divide-y divide-gray-200">
+                        @if ($thirteenthPays->isNotEmpty())
+                        <caption class="p-2">Grand Total: &#8369; <strong class="font-bold text-blue-500">{{number_format($thirteenthPays->sum('amount'),2)}}</strong></caption>
+                        @endif
+
                         <thead class="bg-gray-50">
                             <tr>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
@@ -160,7 +166,7 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse ($thirteenthPays as $item)
-                                <tr>
+                            <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-2">{{ $item->employee->first_name }} {{ $item->employee->last_name }}</td>
                                 <td class="px-4 py-2">{{ \Carbon\Carbon::parse($item->payment_date)->format('M d, Y') }}</td>
                                 <td class="px-4 py-2">{{ number_format($item->amount, 2) }}</td>
@@ -170,10 +176,19 @@
                                 </td>
                             </tr>
                             @empty
-
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap" colspan="4">No employees found.</td>
+                            </tr>
                             @endforelse
-
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="px-4 py-2">
+                                    {{ $thirteenthPays->links() }}
+                                </td>
+                            </tr>
+                        </tfoot>
+
                     </table>
                 </div>
             </div>

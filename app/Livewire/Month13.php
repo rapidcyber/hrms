@@ -24,7 +24,7 @@ class Month13 extends Component
         })->orderBy($this->sortField, $this->sortDirection)
         ->paginate(10);
 
-        $thirteenthPays = ThirteenthPay::all();
+        $thirteenthPays = ThirteenthPay::paginate(10);
 
         return view('livewire.month13', compact('employees', 'thirteenthPays'));
     }
@@ -77,25 +77,13 @@ class Month13 extends Component
             return !in_array(Carbon::parse($attendance->date)->dayOfWeek, json_decode($restDays));
         })->count();
 
-
-
         $this->summary = [
             'days_worked' => $daysWorked,
             'total_months_attended' => $totalMonthsAttended,
             'daily_rate' => $dailyRate,
             'total_pay' => $this->calculate13thMonthPay($dailyRate, $daysWorked),
         ];
-
-        // session()->flash('message', '13th month pay for ' . $employee->first_name . ' ' . $employee->last_name . ' has been processed successfully.');
-
-
-
-        // $thirteenthPay = new ThirteenthPay;
-        // $thirteenthPay->employee_id = $employee->id;
-        // $thirteenthPay->date = $this->date ?? now();
-        // $thirteenthPay->amount = $employee->base_salary;
-        // $thirteenthPay->save();
-
+        $this->showProcessModal = $id;
     }
 
     public function save()

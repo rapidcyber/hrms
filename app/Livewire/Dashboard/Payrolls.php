@@ -12,7 +12,7 @@ class Payrolls extends Component
         $start = now()->startOfMonth();
         $end = now()->endOfMonth();
 
-        $payrolls = Payroll::whereBetween('period_start', [$start, $end]);
+        $payrolls = Payroll::whereMonth('period_start', now()->month)->get();
 
         return view('livewire.dashboard.payrolls', compact('payrolls'));
     }
