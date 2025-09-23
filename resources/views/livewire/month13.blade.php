@@ -104,7 +104,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="text-sm font-medium text-gray-900">
-                                                {{ \Carbon\Carbon::parse($employee->hired_since)->format('M d, Y') }}
+                                                {{ \Carbon\Carbon::parse($employee->hire_date)->format('M d, Y') }}
                                             </div>
                                         </div>
                                     </td>
