@@ -76,7 +76,8 @@ class AttendanceController extends Controller
         // return view('attendance.export', compact('attendances'));
 
         $pdf = PDF::loadView('attendance.export', compact('attendances'));
-        return $pdf->stream('attendances.pdf');
+        return $pdf->setPaper('A4')->download('attendance'.Carbon::now()->format('Y-m-d').'.pdf');
+
     }
     /**
      * Show the form for creating a new resource.
