@@ -33,14 +33,14 @@ class PayrollExport implements FromCollection, WithHeadings
                 return [
                     'EMPLOYEE NAME' => strtoupper($payroll->employee->last_name . ', ' . $payroll->employee->first_name),
                     'DESIGNATION' => $payroll->employee->position->name ?? 'Office Staff',
-                    'BASIC SALARY' => 'PHP '. number_format($payroll->employee->base_salary / 2, 2),
-                    'OVERTIME' => 'PHP '. number_format($payroll['overtime_pay'], 2),
-                    'SUNDAY OVERTIME' => 'PHP '. number_format($summary['sunday_overtime'], 2),
-                    'LATE' => 'PHP '. number_format($summary['late_pay'], 2),
-                    'UNDERTIME' => 'PHP '. number_format($summary['undertime_pay'], 2),
-                    'CASH ADVANCE' => 'PHP '. number_format($payroll->deductions->where('effective_date', '>=', $payroll->period_start)->sum('amount') ?? 0, 2),
-                    'ABSENT' => 'PHP '. number_format($absents * $this->calculateDailyRate($employeeId),2),
-                    'TOTAL' => 'PHP '. number_format($payroll->net_salary, 2)
+                    'BASIC SALARY' => number_format($payroll->employee->base_salary / 2, 2),
+                    'OVERTIME' => number_format($payroll['overtime_pay'], 2),
+                    'SUNDAY OVERTIME' => number_format($summary['sunday_overtime'], 2),
+                    'LATE' => number_format($summary['late_pay'], 2),
+                    'UNDERTIME' => number_format($summary['undertime_pay'], 2),
+                    'CASH ADVANCE' => number_format($payroll->deductions->where('effective_date', '>=', $payroll->period_start)->sum('amount') ?? 0, 2),
+                    'ABSENT' => number_format($absents * $this->calculateDailyRate($employeeId),2),
+                    'TOTAL' => number_format($payroll->net_salary, 2)
                 ];
             });
 
