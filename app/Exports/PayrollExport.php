@@ -48,50 +48,50 @@ class PayrollExport implements FromCollection, WithHeadings
             [
                 'EMPLOYEE NAME' => 'KON. BADONG PLEYTO JR.',
                 'DESIGNATION' => 'DISTICT OFFICE',
-                'BASIC SALARY' => 'PHP 50,000.00',
+                'BASIC SALARY' => '50,000.00',
                 'OVERTIME' => '',
                 'SUNDAY OVERTIME' => '',
                 'LATE' => '',
                 'UNDERTIME' =>'',
                 'CASH ADVANCE' => '',
                 'ABSENT' => '',
-                'TOTAL' => 'PHP 50,000.00'
+                'TOTAL' => '50,000.00'
             ],
             [
                 'EMPLOYEE NAME' => 'GEORGE BAUTISTA',
                 'DESIGNATION' => 'DISTICT OFFICE',
-                'BASIC SALARY' => 'PHP 25,000.00',
+                'BASIC SALARY' => '25,000.00',
                 'OVERTIME' => '',
                 'SUNDAY OVERTIME' => '',
                 'LATE' => '',
                 'UNDERTIME' =>'',
                 'CASH ADVANCE' => '',
                 'ABSENT' => '',
-                'TOTAL' => 'PHP 25,000.00'
+                'TOTAL' => '25,000.00'
             ],
             [
                 'EMPLOYEE NAME' => 'NOEL TUAZON',
                 'DESIGNATION' => 'DISTICT OFFICE',
-                'BASIC SALARY' => 'PHP 15,000.00',
+                'BASIC SALARY' => '15,000.00',
                 'OVERTIME' => '',
                 'SUNDAY OVERTIME' => '',
                 'LATE' => '',
                 'UNDERTIME' =>'',
                 'CASH ADVANCE' => '',
                 'ABSENT' => '',
-                'TOTAL' => 'PHP 15,000.00'
+                'TOTAL' => '15,000.00'
             ],
             [
                 'EMPLOYEE NAME' => 'VIOLETA FULGENCIO',
                 'DESIGNATION' => 'DISTICT OFFICE',
-                'BASIC SALARY' => 'PHP 7,500.00',
+                'BASIC SALARY' => '7,500.00',
                 'OVERTIME' => '',
                 'SUNDAY OVERTIME' => '',
                 'LATE' => '',
                 'UNDERTIME' =>'',
                 'CASH ADVANCE' => '',
                 'ABSENT' => '',
-                'TOTAL' => 'PHP 7,500.00'
+                'TOTAL' => '7,500.00'
             ]
         ]);
 
