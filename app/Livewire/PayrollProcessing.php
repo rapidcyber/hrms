@@ -476,6 +476,10 @@ class PayrollProcessing extends Component
                 ->orWhere('employees.employee_id', 'like', '%' .$this->search.'%');
            })
             ->where('status', 'processed')
+                ->orderBy(
+                    Employee::select('first_name')
+                        ->whereColumn('employees.id', 'payrolls.employee_id')
+                )
             ->whereBetween('period_start', [$this->periodStart, $this->periodEnd])
             ->get();
 
