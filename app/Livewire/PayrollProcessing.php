@@ -228,6 +228,11 @@ class PayrollProcessing extends Component
         $rds = array_filter(json_decode($employee->rest_days));
         $restDays = array_keys($rds);
         foreach ($period as $date) {
+            // Check if $date is object
+            if (is_object($date)) {
+                $date = Carbon::parse($date);
+            }
+
             if (!in_array($date->dayOfWeek, $restDays)) {
                 $daysInMonth++;
             }
@@ -265,6 +270,10 @@ class PayrollProcessing extends Component
         $rest_days = array_filter(json_decode($employee->rest_days));
         $restDays = array_keys($rest_days);
         foreach ($period as $date) {
+            // Check if $date is object
+            if (is_object($date)) {
+                $date = Carbon::parse($date);
+            }
             if (!in_array($date->dayOfWeek, $restDays)) {
                 $daysInMonth++;
             }
@@ -638,25 +647,7 @@ class PayrollProcessing extends Component
     private function calculateDailyRate($employeeId)
     {
         $employee = Employee::find($employeeId);
-        // $startOfMonth = Carbon::parse($this->periodStart)->startOfMonth();
-        // $endOfMonth = Carbon::parse($this->periodStart)->endOfMonth();
 
-        // $daysInMonth = 0;
-        // $period = $startOfMonth->toPeriod($endOfMonth);
-
-        // $rest_days = array_filter(json_decode($employee->rest_days));
-        // $restDays = array_keys($rest_days);
-        // foreach ($period as $date) {
-        //     if (!in_array($date->dayOfWeek, $restDays)) {
-        //         $daysInMonth++;
-        //     }
-        // }
-        // // Compute daily rate
-        // if ($daysInMonth === 0) {
-        //     return 0; // Avoid division by zero
-        // }
-
-        // return $employee->base_salary / $daysInMonth;
         return ($employee->base_salary/2) / 12;
     }
 
@@ -673,6 +664,10 @@ class PayrollProcessing extends Component
         $daysInPeriod = [];
 
         foreach ($periodCount as $date) {
+            // Check if $date is object
+            if (is_object($date)) {
+                $date = Carbon::parse($date);
+            }
             if (!in_array($date->dayOfWeek, array_keys($restDays))) {
                 $daysInPeriod[] = $date->toDateString();
             }

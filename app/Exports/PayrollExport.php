@@ -29,11 +29,12 @@ class PayrollExport implements FromCollection, WithHeadings
                 $employeeId = $payroll->employee_id;
                 $summary = $this->calculateOTLates($employeeId);
                 $absents = $this->getAbsents($employeeId);
+                $level = $payroll->employee->position->level;
 
                 return [
                     'EMPLOYEE NAME' => strtoupper($payroll->employee->last_name . ', ' . $payroll->employee->first_name),
                     'DESIGNATION' => $payroll->employee->position->name ?? 'Office Staff',
-                    'BASIC SALARY' => number_format($payroll->employee->base_salary / 2, 2),
+                    'BASIC SALARY' => number_format($level < 2 ? $payroll->gross_salary : $payroll->employee->base_salary / 2, 2),
                     'OVERTIME' => number_format($payroll['overtime_pay'], 2),
                     'SUNDAY OVERTIME' => number_format($summary['sunday_overtime'], 2),
                     'LATE' => number_format($summary['late_pay'], 2),
@@ -130,6 +131,12 @@ class PayrollExport implements FromCollection, WithHeadings
         $rest_days = array_filter(json_decode($employee->rest_days));
         $restDays = array_keys($rest_days);
         foreach ($period as $date) {
+
+            // Check if $data is object
+            if (is_object($date)) {
+                $date = Carbon::parse($date);
+            }
+
             if (!in_array($date->dayOfWeek, $restDays)) {
                 $daysInMonth++;
             }
@@ -274,25 +281,8 @@ class PayrollExport implements FromCollection, WithHeadings
     private function calculateDailyRate($employeeId)
     {
         $employee = Employee::find($employeeId);
-        $startOfMonth = Carbon::parse($this->parameter['period_start'])->startOfMonth();
-        $endOfMonth = Carbon::parse($this->parameter['period_start'])->endOfMonth();
 
-        $daysInMonth = 0;
-        $period = $startOfMonth->toPeriod($endOfMonth);
-
-        $rest_days = array_filter(json_decode($employee->rest_days));
-        $restDays = array_keys($rest_days);
-        foreach ($period as $date) {
-            if (!in_array($date->dayOfWeek, $restDays)) {
-                $daysInMonth++;
-            }
-        }
-        // Compute daily rate
-        if ($daysInMonth === 0) {
-            return 0; // Avoid division by zero
-        }
-
-        return $employee->base_salary / $daysInMonth;
+        return ($employee->base_salary/2) / 12;
     }
 }
 
