@@ -344,7 +344,7 @@ class PayrollProcessing extends Component
                     $scheduledOut = Carbon::parse($attendance->date . ' ' . $attendance->employee->shift->time_out);
                     $actualIn = Carbon::parse($checkIn);
                     $actualOut = Carbon::parse($checkOut);
-                    if ($actualIn->subMinutes(10)->gt($scheduledIn)) {
+                    if ($actualIn->subMinutes(5)->gt($scheduledIn)) {
                         $summary['lates'] += $scheduledIn->diffInMinutes($actualIn) / 60;
                         $summary['late_pay'] = $summary['lates'] * $hourlyRate;
                     }
