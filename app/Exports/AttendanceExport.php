@@ -36,7 +36,7 @@ class AttendanceExport implements FromCollection,WithHeadings
                 if ($attendancesDate->isEmpty()) {
                     // If no attendance for this employee on this date, create a new attendance record
                     $newAttendance = new Attendance();
-                    $newAttendance->employee_id = $employee->id;
+                    $newAttendance->employee_id = $employee->employee_id;
                     $newAttendance->employee_name = $employee->first_name . ' ' . $employee->last_name;
                     $newAttendance->date = $date->format('Y-m-d');
                     $newAttendance->in_1 = null;
