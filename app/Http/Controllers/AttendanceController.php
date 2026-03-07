@@ -156,7 +156,7 @@ class AttendanceController extends Controller
 
             // Check if late
             $lates = 0;
-            if ($checkIn->isAfter($timeIn)) {
+            if (!$employee->isSecurityPersonnel() && $checkIn->isAfter($timeIn)) {
                 $lates = $timeIn->diffInMinutes($checkIn) / 60;
             }
 

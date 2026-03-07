@@ -152,7 +152,6 @@ class PayrollProcessing extends Component
                 // dd(($employee->base_salary / 2), $payroll->overtime_pay, $summary['sunday_overtime'],$employee->deductions->sum('amount'), $summary['late_pay'], $summary['undertime_pay'], $absentPay);
                 if($payroll->save()){
                     $deductions = $employee->deductions->where('effective_date', '>=', $this->periodStart);
-
                     $payroll->deductions()->attach($deductions->pluck('id')->toArray());
 
                     log_activity('Payroll processed for employee ID: ' . $employee->employee_id);
@@ -344,7 +343,7 @@ class PayrollProcessing extends Component
                     $scheduledOut = Carbon::parse($attendance->date . ' ' . $attendance->employee->shift->time_out);
                     $actualIn = Carbon::parse($checkIn);
                     $actualOut = Carbon::parse($checkOut);
-                    if ($actualIn->subMinutes(5)->gt($scheduledIn)) {
+                    if (!$employee->isSecurityPersonnel() && $actualIn->subMinutes(5)->gt($scheduledIn)) {
                         $summary['lates'] += $scheduledIn->diffInMinutes($actualIn) / 60;
                         $summary['late_pay'] = $summary['lates'] * $hourlyRate;
                     }

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Employee extends Model
 {
+    public const SECURITY_PERSONNEL_POSITION_ID = 11;
+
     protected $fillable = [
         'id',
         'employee_id',
@@ -88,5 +90,10 @@ class Employee extends Model
     public function shift()
     {
         return $this->belongsTo(Shift::class);
+    }
+
+    public function isSecurityPersonnel(): bool
+    {
+        return (int) $this->position_id === self::SECURITY_PERSONNEL_POSITION_ID;
     }
 }

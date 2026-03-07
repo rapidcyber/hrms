@@ -217,7 +217,11 @@ class AttendanceTracking extends Component
                     $checkIn = $attendance->in_1 ?? $attendance->in_2 ?? $attendance->in_3;
                     $checkOut = $attendance->out_3 ?? $attendance->out_2 ?? $attendance->out_1;
                     $date = $attendance->date;
-                    if ($checkIn && Carbon::parse($checkIn)->subMinutes(10)->gt(Carbon::parse($date . ' ' . $shift->time_in))) {
+                    if (
+                        !$employee->isSecurityPersonnel() &&
+                        $checkIn &&
+                        Carbon::parse($checkIn)->subMinutes(10)->gt(Carbon::parse($date . ' ' . $shift->time_in))
+                    ) {
                         $status = 'late';
                     }
 
@@ -359,6 +363,10 @@ class AttendanceTracking extends Component
         $attendance->in_3 = null; // Assuming no third check-in
         $attendance->out_3 = null; // Assuming no third check-out
         $attendance->status = $this->status;
+        $employee = Employee::find($this->employeeId);
+        if ($employee && $employee->isSecurityPersonnel() && $attendance->status === 'late') {
+            $attendance->status = 'present';
+        }
         $attendance->remarks = $this->remarks;
         $attendance->hours_worked = 0; // Default to 0, will be calculated later
         $hours = Carbon::parse($this->checkIn)->diffInMinutes(Carbon::parse($this->checkOut)) / 60;

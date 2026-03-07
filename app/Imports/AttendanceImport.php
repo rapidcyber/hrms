@@ -107,6 +107,10 @@ class AttendanceImport implements ToCollection
                 }
             }
 
+            if ($employee && $employee->isSecurityPersonnel() && $status === 'late') {
+                $status = 'present';
+            }
+
             if(!empty($date)){
                 $date = Carbon::parse($date)->format('Y-m-d');
                 $attendance = Attendance::where('employee_id', $employee->id)->first() ?? new Attendance;
