@@ -170,14 +170,14 @@ class AttendanceTracking extends Component
                         ->whereDate('date', $punch['timestamp']->toDateString())
                         ->first();
 
-                    $employee = Employee::find($punch['employee_id']);
+                    $employee = Employee::where( 'employee_id',$punch['employee_id'])->first();
                     if (!$employee) {
                         continue; // Skip if employee not found
                     }
                     // If attendance record does not exist, create a new one
                     if (!$attendance) {
                         $attendance = new Attendance();
-                        $attendance->employee_id = $punch['employee_id'];
+                        $attendance->employee_id = $employee->id;
                         $attendance->date = $punch['timestamp']->toDateString();
                     }
 
