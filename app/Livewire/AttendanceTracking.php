@@ -174,16 +174,21 @@ class AttendanceTracking extends Component
                 foreach ($punches->whereBetween('timestamp', [$this->periodStart, Carbon::parse($this->periodEnd)->addDay()]) as $punch) {
                     $punchDate = $punch['timestamp']->toDateString();
                     
-                    // Skip if we already processed this date for this employee
-                    $existingAttendance = Attendance::where('employee_id', $punch['employee_id'])
-                        ->where('date', $punchDate)
-                        ->where('source', 'biometric')
-                        ->first();
                     
-                    if ($existingAttendance) {
-                        continue; // Skip duplicate timestamps
-                    }
-                    $attendance = Attendance::where('employee_id', $punch['employee_id'])
+                    // Skip if we already processed this date for this employee
+                    // $existingAttendance = Attendance::whereHas('employee', function($query) use ($punch) {
+                    //         $query->where('employee_id', $punch['employee_id']);
+                    //     })
+                    //     ->where('date', $punchDate)
+                    //     ->where('source', 'biometric')
+                    //     ->first();
+                    
+                    // if ($existingAttendance) {
+                    //     continue; // Skip duplicate timestamps
+                    // }
+                    $attendance = Attendance::whereHas('employee', function($query) use ($punch) {
+                            $query->where('employee_id', $punch['employee_id']);
+                        })
                         ->whereDate('date', $punch['timestamp']->toDateString())
                         ->first();
 
