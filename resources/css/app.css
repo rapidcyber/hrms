@@ -45,6 +45,25 @@
     ::file-selector-button {
         border-color: var(--color-gray-200, currentColor);
     }
+
+    html.dark body {
+        color: #e4e4e7;
+    }
+
+    html.dark body [class~="bg-white"] {
+        color: #18181b;
+    }
+}
+
+html.dark body :is(
+    [class*="text-gray-"],
+    [class*="text-slate-"],
+    [class*="text-zinc-"],
+    [class*="text-neutral-"],
+    [class*="text-stone-"],
+    [class~="text-black"]
+):not([class*="dark:text-"]):not([class~="bg-white"]):not(.bg-white *) {
+    color: #d4d4d8;
 }
 
 [data-flux-field]:not(ui-radio, ui-checkbox) {

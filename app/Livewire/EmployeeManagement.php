@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\DB;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Laradevsbd\Zkteco\Http\Library\ZktecoLib;
+// use Laradevsbd\Zkteco\Http\Library\ZktecoLib;
+use Jmrashed\Zkteco\Lib\ZKTeco;
 
 class EmployeeManagement extends Component
 {
@@ -208,20 +209,28 @@ class EmployeeManagement extends Component
     }
 
     public function syncEmployees(){
-        $zk = new ZktecoLib('192.168.1.142', 4370); // Default port: 4370
+        $zk = new ZKTeco('192.168.1.142', 4370); // Default port: 4370
         $zk->connect();
         $users = $zk->getUser();
 
         try {
             DB::transaction(function () use ($users) {
                 foreach($users as $user){
-                    // check if employee exists
-                    $employee = Employee::where('employee_id', $user[0])->first() ?? new Employee;
-                    $employee->employee_id = $user[0];
-                    $employeeName = explode('.',trim($user[1]));
+                    $employeeId = trim((string) ($user['userid'] ?? ''));
+                    if ($employeeId === '') {
+                        continue;
+                    }
+
+                    if (Employee::where('employee_id', $employeeId)->exists()) {
+                        continue;
+                    }
+
+                    $employee = new Employee;
+                    $employee->employee_id = $employeeId;
+                    $employeeName = explode('.', trim((string) ($user['name'] ?? $employeeId)));
                     $employee->first_name = $employeeName[0];
                     $employee->last_name = $employeeName[1] ?? '';
-                    $employee->email = $user[0] .'changethis@email.com';
+                    $employee->email = $employeeId .'changethis@email.com';
                     $employee->phone = '+639000000000';
                     $employee->date_of_birth = '2000-01-01';
                     $employee->hire_date = now()->format('Y-m-d');
