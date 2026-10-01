@@ -11,7 +11,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\AttendanceImport;
 use App\Exports\AttendanceExport;
 use Livewire\WithFileUploads;
-use Laradevsbd\Zkteco\Http\Library\ZktecoLib;
+use Jmrashed\Zkteco\Lib\ZKTeco;
 use Illuminate\Support\Facades\DB;
 
 class AttendanceTracking extends Component
@@ -118,60 +118,48 @@ class AttendanceTracking extends Component
 
     public function syncBiometricData()
     {
-
         $this->validate([
             'periodStart' => 'required|date',
             'periodEnd' => 'required|date|after_or_equal:periodStart',
         ]);
 
         ini_set('max_execution_time', 600); // 600 seconds
-        $zk = new ZktecoLib('192.168.1.142', 4370); // Default port: 4370
-        $zk->connect();
-        $attendances = $zk->getAttendance();
+        ini_set('memory_limit', '512M'); // Increase memory limit
+        
+        try {
+            $zk = new ZKTeco('192.168.1.142', 4370);
+            if (!$zk->connect()) {
+                session()->flash('error', 'Failed to connect to ZKTeco device');
+                return;
+            }
+            $attendances = $zk->getAttendance();
+            $zk->disconnect();
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to connect to ZKTeco device: ' . $e->getMessage());
+            return;
+        }
 
-        // Convert array to a Laravel Collection for easier manipulation
+        // Filter attendance data by date range first to reduce memory usage
+        $startDate = Carbon::parse($this->periodStart);
+        $endDate = Carbon::parse($this->periodEnd)->addDay();
+        
+        $filteredAttendances = array_filter($attendances, function($record) use ($startDate, $endDate) {
+            $timestamp = Carbon::parse($record['timestamp']);
+            return $timestamp->between($startDate, $endDate);
+        });
 
-        // Generate sample attendance data for the last 2 months
-        // $attendances = [];
-        // $employeeIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43];
-        // $bioIdBase = 65000000000;
-        // $startDate = Carbon::now()->subMonths(1)->startOfMonth();
-        // $endDate = Carbon::now()->endOfMonth();
-
-        // foreach ($employeeIds as $i => $employeeId) {
-        //     $bioId = $bioIdBase + ($i * 300000000);
-        //     $date = $startDate->copy();
-        //     while ($date->lte($endDate)) {
-        //         // Only weekdays (Mon-Fri)
-        //         if ($date->isWeekday()) {
-        //             // Simulate check-in between 7:30-9:00 and check-out between 16:30-18:00
-        //             $checkIn = $date->copy()->setTime(rand(7, 8), rand(30, 59), rand(0, 59))->format('Y-m-d H:i:s');
-        //             $checkOut = $date->copy()->setTime(rand(16, 17), rand(30, 59), rand(0, 59))->format('Y-m-d H:i:s');
-        //             $attendances[] = [$bioId, $employeeId, 1, $checkIn];
-        //             $attendances[] = [$bioId, $employeeId, 1, $checkOut];
-        //         }
-        //         $date->addDay();
-        //     }
-        // }
-
-        $punches = collect($attendances)->map(function ($record) {
+        $punches = collect($filteredAttendances)->map(function ($record) {
             return [
-                'bio_id' => $record[0],
-                'employee_id' => $record[1],
-                'in_out_mode' => $record[2],
-                'timestamp' => Carbon::parse($record[3]),
+                'bio_id' => $record['uid'],
+                'employee_id' => $record['id'],
+                'in_out_mode' => $record['type'],
+                'timestamp' => Carbon::parse($record['timestamp']),
             ];
         });
 
         try {
             DB::transaction(function () use ($punches) {
-                // Get existing timestamps to avoid duplicates
-                $existingTimestamps = Attendance::where('source', 'biometric')
-                    ->whereBetween('date', [$this->periodStart, Carbon::parse($this->periodEnd)->addDay()])
-                    ->pluck('date')
-                    ->toArray();
-
-                foreach ($punches->whereBetween('timestamp', [$this->periodStart, Carbon::parse($this->periodEnd)->addDay()]) as $punch) {
+                foreach ($punches as $punch) {
                     $punchDate = $punch['timestamp']->toDateString();
                     
                     
@@ -242,7 +230,7 @@ class AttendanceTracking extends Component
                     if (
                         !$employee->isSecurityPersonnel() &&
                         $checkIn &&
-                        Carbon::parse($checkIn)->subMinutes(10)->gt(Carbon::parse($date . ' ' . $shift->time_in))
+                        Carbon::parse($checkIn)->subMinutes(5)->gt(Carbon::parse($date . ' ' . $shift->time_in))
                     ) {
                         $status = 'late';
                     }
