@@ -46,6 +46,13 @@ class PayrollProcessing extends Component
     ];
     public $showPayrollModal = false;
     public $viewingPayroll;
+    public $viewingPayrollDeductions = [];
+    public $showPayrollEditModal = false;
+    public $editingPayrollId;
+    public $editGrossSalary;
+    public $editOvertimePay;
+    public $editTotalDeductions;
+    public $editNetSalary;
     public $confirmDeleteAll = false;
 
     protected $listeners = [
@@ -512,8 +519,70 @@ class PayrollProcessing extends Component
             $payroll->gross_salary = $summary['base_salary'];
         }
 
+        $this->viewingPayrollDeductions = $payroll->deductions
+            ->where('effective_date', '>=', $payroll->period_start)
+            ->groupBy(fn ($deduction) => strtolower(str_replace(['-', '_'], ' ', trim($deduction->type))))
+            ->map(fn ($deductions, $type) => [
+                'type' => ucwords($type),
+                'amount' => $deductions->sum('amount'),
+            ])
+            ->values()
+            ->all();
+
+        if (empty($this->viewingPayrollDeductions)) {
+            $this->viewingPayrollDeductions = [
+                ['type' => 'Loan', 'amount' => 0],
+                ['type' => 'Cash Advance', 'amount' => 0],
+            ];
+        }
+
         $this->viewingPayroll = $payroll;
 
+    }
+
+    public function editPayroll($id)
+    {
+        $payroll = Payroll::find($id);
+
+        if (!$payroll) {
+            session()->flash('error', 'Payroll not found.');
+            return;
+        }
+
+        $this->editingPayrollId = $payroll->id;
+        $this->editGrossSalary = $payroll->gross_salary;
+        $this->editOvertimePay = $payroll->overtime_pay ?? 0;
+        $this->editTotalDeductions = $payroll->total_deductions;
+        $this->editNetSalary = $payroll->net_salary;
+        $this->showPayrollEditModal = true;
+    }
+
+    public function updatePayroll()
+    {
+        $validated = $this->validate([
+            'editGrossSalary' => 'required|numeric|min:0',
+            'editOvertimePay' => 'nullable|numeric|min:0',
+            'editTotalDeductions' => 'required|numeric|min:0',
+            'editNetSalary' => 'required|numeric',
+        ]);
+
+        $payroll = Payroll::find($this->editingPayrollId);
+
+        if (!$payroll) {
+            $this->showPayrollEditModal = false;
+            session()->flash('error', 'Payroll not found.');
+            return;
+        }
+
+        $payroll->gross_salary = $validated['editGrossSalary'];
+        $payroll->overtime_pay = $validated['editOvertimePay'] ?? 0;
+        $payroll->total_deductions = $validated['editTotalDeductions'];
+        $payroll->net_salary = $validated['editNetSalary'];
+        $payroll->save();
+
+        log_activity('Payroll updated for payroll ID: ' . $payroll->id);
+        $this->showPayrollEditModal = false;
+        session()->flash('message', 'Payroll updated successfully!');
     }
 
     public function sortBy($field)

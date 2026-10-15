@@ -279,7 +279,7 @@
                     id="attendance-table"
                     class="mb-6 min-w-full divide-y divide-gray-200"
                     wire:loading.class="opacity-50"
-                    wire:target="deleteAllPayroll,toggleSelectAllPayroll, deletePayroll, viewPayroll,printPayrolls,downloadPayroll">
+                    wire:target="deleteAllPayroll,toggleSelectAllPayroll, editPayroll,updatePayroll,deletePayroll,viewPayroll,printPayrolls,downloadPayroll">
                     <x-slot name="head">
                         <x-flux.table.heading>
                                 <input type="checkbox" id="select-all-payroll" wire:model.live="selectAllPayroll" wire:click="toggleSelectAllPayroll">
@@ -312,6 +312,15 @@
                                     </span>
                                 </x-flux.table.cell>
                                 <x-flux.table.cell>
+                                    <flux:button
+                                        size="xs"
+                                        variant="outline"
+                                        icon="pencil-square"
+                                        class="mr-2"
+                                        wire:click="editPayroll({{ $payroll->id }})"
+                                    >
+                                        Edit
+                                    </flux:button>
                                     <flux:button
                                         size="xs"
                                         variant="outline"
@@ -431,6 +440,41 @@
             <flux:button class="ml-2" wire:click.prevent="saveDeduction" variant="primary">{{ $editingDeduction ? 'Update' : 'Save' }}</flux:button>
         </x-slot>
     </x-modal>
+    <x-modal wire:show="showPayrollEditModal" maxWidth="lg" title="Edit Payroll Summary">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <x-flux::input
+                type="number"
+                step="0.01"
+                min="0"
+                label="Gross Salary"
+                wire:model="editGrossSalary"
+            />
+            <x-flux::input
+                type="number"
+                step="0.01"
+                min="0"
+                label="Overtime Pay"
+                wire:model="editOvertimePay"
+            />
+            <x-flux::input
+                type="number"
+                step="0.01"
+                min="0"
+                label="Total Deductions"
+                wire:model="editTotalDeductions"
+            />
+            <x-flux::input
+                type="number"
+                step="0.01"
+                label="Net Salary"
+                wire:model="editNetSalary"
+            />
+        </div>
+        <x-slot name="footer">
+            <flux:button wire:click="$set('showPayrollEditModal', false)">Cancel</flux:button>
+            <flux:button class="ml-2" variant="primary" wire:click="updatePayroll">Update Payroll</flux:button>
+        </x-slot>
+    </x-modal>
     <x-modal
         wire:show="showPayrollModal"
         maxWidth="lg"
@@ -496,22 +540,12 @@
                     <td>Under Time:</td>
                     <td style="color:red">&#8369; {{ number_format($viewingPayroll->undertime_pay, 2) }}</td>
                 </tr>
-                @forelse ($viewingPayroll->deductions->where('effective_date', '>=', $periodStart) as $deduction)
+                @foreach ($viewingPayrollDeductions as $deduction)
                 <tr>
-                    <td>{{ ucfirst($deduction->type)}}: </td>
-                    <td style="color:red;font-weight:bold">₱ {{number_format($deduction->amount,2)}}</td>
+                    <td>{{ $deduction['type'] }}: </td>
+                    <td style="color:red;font-weight:bold">₱ {{ number_format($deduction['amount'], 2) }}</td>
                 </tr>
-                @empty
-                    <tr>
-                        <td>Loan: </td>
-                        <td style="color:red;font-weight:bold">₱ 0.00</td>
-                    </tr>
-                    <tr>
-                        <td>Cash Advance: </td>
-                        <td style="color:red;font-weight:bold">₱ 0.00</td>
-
-                    </tr>
-                @endforelse
+                @endforeach
                 <tr>
                     <td>Absents</td>
                     <td style="color:red">₱ {{ number_format($viewingPayroll->absents, 2) }}</td>
