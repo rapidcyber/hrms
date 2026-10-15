@@ -77,10 +77,7 @@
                 </table>
                 <div>
                     <div>
-                        @php
-                            $month = now()->format('F');
-                        @endphp
-                        For the month of {{ $month }}
+                        For the period of {{ Carbon\Carbon::parse($period['start_date'])->format('F j, Y') }} to {{ Carbon\Carbon::parse($period['end_date'])->format('F j, Y') }}
                     </div>
                 </div>
             </div>
@@ -110,7 +107,7 @@
                     @endphp
 
                     <tr>
-                        <td style="padding: 2px; text-align:center">{{ $key + 1 }}</td>
+                        <td style="padding: 2px; text-align:center">{{ Carbon\Carbon::parse($period['start_date'])->addDays($key)->format('m/d') }}</td>
                         <td style="padding: 2px; text-align:center">{{ $day ? Carbon\Carbon::parse($day['in'])->format('h:i A') : '-' }}</td>
                         <td style="padding: 2px; text-align:center">{{ $day ? Carbon\Carbon::parse($day['out'])->format('h:i A') : '-' }}</td>
                         <td style="padding: 2px; text-align:center">{{ $hours ?? '-' }}</td>

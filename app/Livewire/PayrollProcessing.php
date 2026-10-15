@@ -30,7 +30,6 @@ class PayrollProcessing extends Component
         'status' => false,
     ]];
     public $editingDeduction = false;
-    public $recentPayrolls = [];
     public $confirmDelete = false;
     public $deductionId;
     public $deduction_type = "";
@@ -416,7 +415,7 @@ class PayrollProcessing extends Component
         ]);
         $this->selectedEmployees = [];
         $this->selectedPayrolls = [];
-        $this->dispatch('loadEmployees');
+        $this->loadEmployees();
     }
 
     public function saveDeduction()
@@ -474,10 +473,6 @@ class PayrollProcessing extends Component
 
     public function render()
     {
-
-        if(empty($this->recentPayrolls)) {
-            $this->recentPayrolls = Payroll::orderBy('created_at', 'desc')->take(5)->get();
-        }
         $payrolls = Payroll::whereHas('employee',function($q){
                 $q->where('first_name', 'like', '%'. $this->search.'%')
                 ->orWhere('last_name', 'like', '%'. $this->search.'%')
@@ -495,8 +490,14 @@ class PayrollProcessing extends Component
     }
     // Preview Payrool
     public function viewPayroll($id){
+        $payroll = Payroll::find($id);
+
+        if (!$payroll) {
+            session()->flash('error', 'Payroll not found.');
+            return;
+        }
+
         $this->showPayrollModal = true;
-        $payroll = Payroll::findOrFail($id);
 
         $summary = $this->calculateOTLates($payroll->employee_id);
 
@@ -625,19 +626,31 @@ class PayrollProcessing extends Component
             $cutoffEnd = Carbon::parse($cutoff[1])->endOfDay();
         }
 
+        $employee = Employee::findOrFail($employeeId);
+        $restDays = array_keys(array_filter(json_decode($employee->rest_days ?? '[]', true) ?? []));
+
         $attendance = Attendance::where('employee_id', $employeeId)
             ->whereBetween('date', [$cutoffStart->toDateString(), $cutoffEnd->toDateString()] )->get();
 
         $allDates = [];
         $currentDate = $cutoffStart->copy();
         while ($currentDate->lte($cutoffEnd)) {
-            // Only add if not Saturday (6) or Sunday (0)
-            if (!in_array($currentDate->dayOfWeek, [6, 0])) {
+            if (!in_array($currentDate->dayOfWeek, $restDays)) {
                 $allDates[] = $currentDate->toDateString();
             }
             $currentDate->addDay();
         }
-        $presentDates = $attendance->pluck('date')->toArray();
+
+        $presentDates = $attendance
+            ->filter(function ($record) {
+                $hasTimeIn = filled($record->in_1) || filled($record->in_2) || filled($record->in_3);
+                $hasTimeOut = filled($record->out_1) || filled($record->out_2) || filled($record->out_3);
+
+                return $hasTimeIn && $hasTimeOut;
+            })
+            ->map(fn ($record) => Carbon::parse($record->date)->toDateString())
+            ->all();
+
         $absentDays = array_diff($allDates, $presentDates);
         $absentCount = count($absentDays);
         return $absentCount;
