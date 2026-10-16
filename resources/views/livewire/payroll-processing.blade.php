@@ -441,33 +441,13 @@
         </x-slot>
     </x-modal>
     <x-modal wire:show="showPayrollEditModal" maxWidth="lg" title="Edit Payroll Summary">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
             <x-flux::input
                 type="number"
                 step="0.01"
                 min="0"
-                label="Gross Salary"
-                wire:model="editGrossSalary"
-            />
-            <x-flux::input
-                type="number"
-                step="0.01"
-                min="0"
-                label="Overtime Pay"
-                wire:model="editOvertimePay"
-            />
-            <x-flux::input
-                type="number"
-                step="0.01"
-                min="0"
-                label="Total Deductions"
-                wire:model="editTotalDeductions"
-            />
-            <x-flux::input
-                type="number"
-                step="0.01"
-                label="Net Salary"
-                wire:model="editNetSalary"
+                label="Overtime Hours"
+                wire:model="editOvertimeHours"
             />
         </div>
         <x-slot name="footer">

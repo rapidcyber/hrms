@@ -49,10 +49,7 @@ class PayrollProcessing extends Component
     public $viewingPayrollDeductions = [];
     public $showPayrollEditModal = false;
     public $editingPayrollId;
-    public $editGrossSalary;
-    public $editOvertimePay;
-    public $editTotalDeductions;
-    public $editNetSalary;
+    public $editOvertimeHours;
     public $confirmDeleteAll = false;
 
     protected $listeners = [
@@ -550,20 +547,17 @@ class PayrollProcessing extends Component
         }
 
         $this->editingPayrollId = $payroll->id;
-        $this->editGrossSalary = $payroll->gross_salary;
-        $this->editOvertimePay = $payroll->overtime_pay ?? 0;
-        $this->editTotalDeductions = $payroll->total_deductions;
-        $this->editNetSalary = $payroll->net_salary;
+        $hourlyRate = $this->calculateDailyRate($payroll->employee_id) / 8;
+        $this->editOvertimeHours = $hourlyRate > 0
+            ? round(($payroll->overtime_pay ?? 0) / $hourlyRate, 2)
+            : 0;
         $this->showPayrollEditModal = true;
     }
 
     public function updatePayroll()
     {
         $validated = $this->validate([
-            'editGrossSalary' => 'required|numeric|min:0',
-            'editOvertimePay' => 'nullable|numeric|min:0',
-            'editTotalDeductions' => 'required|numeric|min:0',
-            'editNetSalary' => 'required|numeric',
+            'editOvertimeHours' => 'required|numeric|min:0',
         ]);
 
         $payroll = Payroll::find($this->editingPayrollId);
@@ -574,10 +568,16 @@ class PayrollProcessing extends Component
             return;
         }
 
-        $payroll->gross_salary = $validated['editGrossSalary'];
-        $payroll->overtime_pay = $validated['editOvertimePay'] ?? 0;
-        $payroll->total_deductions = $validated['editTotalDeductions'];
-        $payroll->net_salary = $validated['editNetSalary'];
+        $hourlyRate = $this->calculateDailyRate($payroll->employee_id) / 8;
+        $overtimePay = (float) $validated['editOvertimeHours'] * $hourlyRate;
+        $overtimeDifference = $overtimePay - (float) ($payroll->overtime_pay ?? 0);
+        $payroll->overtime_pay = $overtimePay;
+        $payroll->net_salary += $overtimeDifference;
+
+        if ($payroll->employee->position->level >= 2) {
+            $payroll->gross_salary += $overtimeDifference;
+        }
+
         $payroll->save();
 
         log_activity('Payroll updated for payroll ID: ' . $payroll->id);
